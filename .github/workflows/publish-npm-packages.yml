@@ -1,0 +1,57 @@
+name: Publish packages
+
+on:
+  pull_request:
+    branches: 
+      - main
+      - develop
+    types: [closed]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm test
+
+  publish_canary:
+    if: ${{ github.ref_name == 'develop' }} && ${{ github.event.pull_request.merged }}
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          registry-url: https://npm.pkg.github.com/
+      - run: npm ci
+      - run: npm build
+      - run: npm publish:canary
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}    
+
+  publish_stable:
+    if: ${{ github.ref_name == 'main' }} && ${{ github.event.pull_request.merged }}
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          registry-url: https://npm.pkg.github.com/
+      - run: npm ci
+      - run: npm build
+      - run: npm publish:stable
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}

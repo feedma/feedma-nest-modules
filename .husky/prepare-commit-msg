@@ -1,0 +1,5 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+COMMIT_MSG=$(cat "$1")
+(echo $COMMIT_MSG | npx commitlint) || (exec < /dev/tty && npx cz --hook) || true

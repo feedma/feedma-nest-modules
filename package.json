@@ -18,8 +18,10 @@
     "typecheck": "tsc --project ./tsconfig.json --noEmit",
     "prebuild": "rimraf lib",
     "publish:canary": "lerna publish --canary --yes --loglevel=verbose",
-    "version:stable": "lerna version --yes --conventional-commits --create-release github --loglevel=verbose",
-    "publish:stable": "lerna publish --yes --conventional-commits --create-release github --loglevel=verbose",
+    "version:beta": "lerna version --yes --conventional-commits --conventional-prerelease --create-release github --preid beta --loglevel=verbose",
+    "publish:beta": "lerna publish --yes --conventional-commits --conventional-prerelease --create-release github --loglevel=verbose",
+    "version:stable": "lerna version --yes --conventional-commits --conventional-graduate --create-release github --loglevel=verbose",
+    "publish:stable": "lerna publish --yes --conventional-commits --conventional-graduate --create-release github --loglevel=verbose",
     "publish:dev": "lerna run build && lerna run publish:dev"
   },
   "workspaces": [

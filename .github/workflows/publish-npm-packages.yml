@@ -2,7 +2,7 @@ name: Publish packages
 
 on:
   pull_request:
-    branches: 
+    branches:
       - main
       - develop
     types: [closed]
@@ -33,9 +33,9 @@ jobs:
           registry-url: https://npm.pkg.github.com/
       - run: npm ci
       - run: npm build
-      - run: npm publish:canary
+      - run: npm publish:beta
         env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}    
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
   publish_stable:
     if: ${{ github.ref_name == 'main' }} && ${{ github.event.pull_request.merged }}

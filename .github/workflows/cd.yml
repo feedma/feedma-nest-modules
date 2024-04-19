@@ -41,7 +41,7 @@ jobs:
       - run: npm run build
       - run: npm run publish:beta
         env:
-          GH_TOKEN: ${{secrets.GH_TOKEN}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
   publish_stable:
     if: github.ref_name == 'main' && github.event.pull_request.merged == true
@@ -65,4 +65,4 @@ jobs:
       - run: npm run build
       - run: npm run publish:stable
         env:
-          GH_TOKEN: ${{secrets.GH_TOKEN}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}

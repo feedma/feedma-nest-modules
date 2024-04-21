@@ -26,6 +26,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,13 +36,10 @@ jobs:
       - run: |
           git config --global user.email "${{github.actor}}"
           git config --global user.name "${{github.actor}}@users.noreply.github.com"
-          git remote set-url origin "https://${{github.actor}}:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}.git"
+          git remote set-url origin "https://github.com/${{github.repository}}.git"
       - run: npm ci
       - run: npm run build
       - run: npm run publish:beta
-        env:
-          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish_stable:
     if: github.ref_name == 'main' && github.event.pull_request.merged == true
@@ -49,6 +48,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -57,10 +58,7 @@ jobs:
       - run: |
           git config --global user.email "${{github.actor}}"
           git config --global user.name "${{github.actor}}@users.noreply.github.com"
-          git remote set-url origin "https://${{github.actor}}:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}.git"
+          git remote set-url origin "https://github.com/${{github.repository}}.git"
       - run: npm ci
       - run: npm run build
       - run: npm run publish:stable
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

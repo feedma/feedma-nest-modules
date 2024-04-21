@@ -1,8 +1,11 @@
 {
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
   "version": "independent",
-  "packages": ["libs/*"],
+  "packages": ["packages/*"],
   "command": {
+    "publish": {
+      "registry": "https://npm.pkg.github.com"
+    },
     "version": {
       "createRelease": "github",
       "conventionalCommits": true,

@@ -1,0 +1,61 @@
+{
+  "name": "@feedma/nest-common",
+  "version": "0.0.2-alpha.2",
+  "description": "Common resources for nest services",
+  "keywords": [
+    "nest",
+    "common"
+  ],
+  "author": "Eduardo Salazar <eduardo.develop@gmail.com>",
+  "homepage": "https://github.com/feedma/feedma-nest-modules#readme",
+  "license": "MIT",
+  "main": "lib/src/index.js",
+  "types": "lib/src/index.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/feedma/feedma-nest-modules.git"
+  },
+  "scripts": {
+    "prebuild": "rimraf lib",
+    "build": "tsc --build",
+    "test": "jest --passWithNoTests",
+    "format": "prettier --write \"{src,test}/**/*.ts\"",
+    "lint": "eslint \"{src,test}/**/*.ts\" --fix",
+    "publish:dev": "npx yalc publish"
+  },
+  "bugs": {
+    "url": "https://github.com/feedma/feedma-nest-modules/issues"
+  },
+  "devDependencies": {
+    "@nestjs/common": "10.2.7",
+    "@nestjs/config": "3.1.1",
+    "@nestjs/core": "10.2.7",
+    "@nestjs/graphql": "^12.1.1",
+    "@types/uuid": "^9.0.8",
+    "nest-winston": "^1.9.4",
+    "nestjs-cls": "^4.3.0",
+    "uuid": "^9.0.1"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/graphql": "^12.1.1",
+    "@nestjs/testing": "^10.0.0",
+    "@types/uuid": "^9.0.8",
+    "nest-winston": "^1.9.4",
+    "nestjs-cls": "^4.3.0",
+    "reflect-metadata": "^0.1.12",
+    "uuid": "^9.0.1"
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com"
+  }
+}

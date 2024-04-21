@@ -26,20 +26,24 @@ jobs:
     permissions:
       contents: read
       packages: write
-    env:
-      GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: |
+      - name: Setup
+        run: |
           git config --global user.email "${{github.actor}}"
           git config --global user.name "${{github.actor}}@users.noreply.github.com"
           git remote set-url origin "https://github.com/${{github.repository}}.git"
-      - run: npm ci
-      - run: npm run build
-      - run: npm run publish:beta
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+      - name: Publish packages
+        run: npm run publish:beta
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish_stable:
     if: github.ref_name == 'main' && github.event.pull_request.merged == true
@@ -48,17 +52,21 @@ jobs:
     permissions:
       contents: read
       packages: write
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: |
+      - name: Setup
+        run: |
           git config --global user.email "${{github.actor}}"
           git config --global user.name "${{github.actor}}@users.noreply.github.com"
           git remote set-url origin "https://github.com/${{github.repository}}.git"
-      - run: npm ci
-      - run: npm run build
-      - run: npm run publish:stable
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+      - name: Publish packages
+        run: npm run publish:stable
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

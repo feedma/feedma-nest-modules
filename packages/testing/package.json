@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-testing",
-  "version": "0.0.6",
+  "version": "0.0.7-alpha.2",
   "description": "Testing resources for nest services",
   "keywords": [
     "nest",
@@ -41,11 +41,11 @@
     "reflect-metadata": "0.2.2"
   },
   "peerDependencies": {
-    "@nestjs/common": "~10.0",
-    "@nestjs/core": "~3.0",
-    "@nestjs/testing": "~10.0",
-    "nestjs-cls": "~4.0",
-    "reflect-metadata": "^0.2.0"
+    "@nestjs/common": "10.x",
+    "@nestjs/core": "10.x",
+    "@nestjs/testing": "10.x",
+    "nestjs-cls": "4.x",
+    "reflect-metadata": "^0.2.x"
   },
   "publishConfig": {
     "access": "restricted",

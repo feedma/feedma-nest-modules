@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-common",
-  "version": "0.0.6",
+  "version": "0.0.7-alpha.2",
   "description": "Common resources for nest services",
   "keywords": [
     "nest",
@@ -45,16 +45,16 @@
     "uuid": "9.0.1"
   },
   "peerDependencies": {
-    "@nestjs/common": "~10.0",
-    "@nestjs/config": "~3.0",
-    "@nestjs/core": "~10.0",
-    "@nestjs/graphql": "~12.0",
-    "@nestjs/testing": "~10.0",
-    "@types/uuid": "~9.0",
-    "nest-winston": "~1.0",
-    "nestjs-cls": "~4.0",
-    "reflect-metadata": "^0.2.0",
-    "uuid": "~9.0"
+    "@nestjs/common": "10.x",
+    "@nestjs/config": "3.x",
+    "@nestjs/core": "10.x",
+    "@nestjs/graphql": "12.x",
+    "@nestjs/testing": "10.x",
+    "@types/uuid": "9.x",
+    "nest-winston": "1.x",
+    "nestjs-cls": "4.x",
+    "reflect-metadata": "^0.2.x",
+    "uuid": "9.x"
   },
   "publishConfig": {
     "access": "restricted",

@@ -23,6 +23,8 @@
     "paths": {
       "@src/*": ["test/app/*"],
       "@test/*": ["test/*"],
+      "@feedma/nest-common": ["packages/common/src"],
+      "@feedma/nest-common/*": ["packages/common/src/*"],
       "@feedma/nest-testing": ["packages/testing/src"],
       "@feedma/nest-testing/*": ["packages/testing/src/*"]
     }

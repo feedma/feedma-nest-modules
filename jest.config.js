@@ -34,6 +34,8 @@ module.exports = {
     '^@modules/(.*)$': ['<rootDir>/src/modules/$1'],
     '^@shared/(.*)$': ['<rootDir>/src/shared/$1'],
     '^@test/(.*)$': ['<rootDir>/test/$1'],
+    '^@feedma/nest-common': ['<rootDir>/packages/common/src/index'],
+    '^@feedma/nest-common/(.*)$': ['<rootDir>/packages/common/src/$1'],
     '^@feedma/nest-testing': ['<rootDir>/packages/testing/src/index'],
     '^@feedma/nest-testing/(.*)$': ['<rootDir>/packages/testing/src/$1'],
   },

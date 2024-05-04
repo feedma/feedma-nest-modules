@@ -1,4 +1,5 @@
 export * from './common.module';
+export { ILoggingOptions, ICommonModuleOptions } from './common.definitions';
 export * from './constants/app.constants';
 export * from './exceptions/base.exception';
 export * from './helpers/is-success-http-code.helper';

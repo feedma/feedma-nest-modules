@@ -41,10 +41,10 @@
     "reflect-metadata": "0.2.2"
   },
   "peerDependencies": {
-    "@nestjs/common": "~10.0",
-    "@nestjs/core": "~3.0",
-    "@nestjs/testing": "~10.0",
-    "nestjs-cls": "~4.0",
+    "@nestjs/common": "10.x",
+    "@nestjs/core": "3.x",
+    "@nestjs/testing": "10.x",
+    "nestjs-cls": "4.x",
     "reflect-metadata": "^0.2.0"
   },
   "publishConfig": {

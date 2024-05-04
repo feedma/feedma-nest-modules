@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-testing",
-  "version": "0.0.5",
+  "version": "0.0.6-alpha.0",
   "description": "Testing resources for nest services",
   "keywords": [
     "nest",

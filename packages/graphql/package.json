@@ -1,10 +1,10 @@
 {
-  "name": "@feedma/nest-testing",
-  "version": "0.0.7",
-  "description": "Testing resources for nest services",
+  "name": "@feedma/nest-graphql",
+  "version": "0.0.0",
+  "description": "Common resources for graphql services",
   "keywords": [
     "nest",
-    "testing"
+    "graphql"
   ],
   "author": "Eduardo Salazar <eduardo.develop@gmail.com>",
   "homepage": "https://github.com/feedma/feedma-nest-modules#readme",
@@ -37,13 +37,20 @@
     "@nestjs/common": "10.3.8",
     "@nestjs/config": "3.2.2",
     "@nestjs/core": "10.3.8",
+    "@nestjs/graphql": "12.1.1",
+    "graphql-scalars": "1.23.0",
+    "graphql-upload-ts": "2.1.2",
     "nestjs-cls": "4.3.0",
     "reflect-metadata": "0.2.2"
   },
   "peerDependencies": {
     "@nestjs/common": "10.x",
+    "@nestjs/config": "3.x",
     "@nestjs/core": "10.x",
+    "@nestjs/graphql": "12.x",
     "@nestjs/testing": "10.x",
+    "graphql-scalars": "1.x",
+    "graphql-upload-ts": "2.x",
     "nestjs-cls": "4.x",
     "reflect-metadata": "^0.2.x"
   },

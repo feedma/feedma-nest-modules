@@ -1,6 +1,7 @@
 export * from './common.module';
 export { ILoggingOptions, ICommonModuleOptions } from './common.definitions';
 export * from './constants/app.constants';
+export * from './dto/pagination-params.dto';
 export * from './exceptions/base.exception';
 export * from './helpers/is-success-http-code.helper';
 export * from './helpers/use-context-request.helper';

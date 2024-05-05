@@ -7,5 +7,12 @@
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"],
-  "references": []
+  "references": [
+    {
+      "path": "../common"
+    },
+    {
+      "path": "../testing"
+    }
+  ]
 }

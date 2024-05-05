@@ -1,0 +1,61 @@
+{
+  "name": "@feedma/nest-graphql",
+  "version": "0.0.0",
+  "description": "Common resources for graphql services",
+  "keywords": [
+    "nest",
+    "graphql"
+  ],
+  "author": "Eduardo Salazar <eduardo.develop@gmail.com>",
+  "homepage": "https://github.com/feedma/feedma-nest-modules#readme",
+  "license": "MIT",
+  "main": "lib/src/index.js",
+  "types": "lib/src/index.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/feedma/feedma-nest-modules.git"
+  },
+  "scripts": {
+    "prebuild": "rimraf lib",
+    "build": "tsc --build",
+    "test": "jest --passWithNoTests",
+    "format": "prettier --write \"{src,test}/**/*.ts\"",
+    "lint": "eslint \"{src,test}/**/*.ts\" --fix",
+    "publish:dev": "npx yalc publish"
+  },
+  "bugs": {
+    "url": "https://github.com/feedma/feedma-nest-modules/issues"
+  },
+  "devDependencies": {
+    "@nestjs/common": "10.3.8",
+    "@nestjs/config": "3.2.2",
+    "@nestjs/core": "10.3.8",
+    "@nestjs/graphql": "12.1.1",
+    "graphql-scalars": "1.23.0",
+    "graphql-upload-ts": "2.1.2",
+    "nestjs-cls": "4.3.0",
+    "reflect-metadata": "0.2.2"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "10.x",
+    "@nestjs/config": "3.x",
+    "@nestjs/core": "10.x",
+    "@nestjs/graphql": "12.x",
+    "@nestjs/testing": "10.x",
+    "graphql-scalars": "1.x",
+    "graphql-upload-ts": "2.x",
+    "nestjs-cls": "4.x",
+    "reflect-metadata": "^0.2.x"
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com"
+  }
+}

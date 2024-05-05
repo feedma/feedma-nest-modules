@@ -36,6 +36,8 @@ module.exports = {
     '^@test/(.*)$': ['<rootDir>/test/$1'],
     '^@feedma/nest-common': ['<rootDir>/packages/common/src/index'],
     '^@feedma/nest-common/(.*)$': ['<rootDir>/packages/common/src/$1'],
+    '^@feedma/nest-graphql': ['<rootDir>/packages/graphql/src/index'],
+    '^@feedma/nest-graphql/(.*)$': ['<rootDir>/packages/graphql/src/$1'],
     '^@feedma/nest-testing': ['<rootDir>/packages/testing/src/index'],
     '^@feedma/nest-testing/(.*)$': ['<rootDir>/packages/testing/src/$1'],
   },

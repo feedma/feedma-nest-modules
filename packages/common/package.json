@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-common",
-  "version": "0.0.8-alpha.2",
+  "version": "0.0.8",
   "description": "Common resources for nest services",
   "keywords": [
     "nest",
@@ -36,7 +36,7 @@
   "devDependencies": {
     "@nestjs/common": "10.3.8",
     "@nestjs/config": "3.2.2",
-    "@nestjs/core": "10.3.8",
+    "@nestjs/core": "10.4.4",
     "@nestjs/graphql": "12.1.1",
     "@types/uuid": "9.0.8",
     "nest-winston": "1.9.4",

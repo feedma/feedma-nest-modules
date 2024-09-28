@@ -28,7 +28,9 @@
       "@feedma/nest-graphql": ["packages/graphql/src"],
       "@feedma/nest-graphql/*": ["packages/graphql/src/*"],
       "@feedma/nest-testing": ["packages/testing/src"],
-      "@feedma/nest-testing/*": ["packages/testing/src/*"]
+      "@feedma/nest-testing/*": ["packages/testing/src/*"],
+      "@feedma/nest-typeorm": ["packages/typeorm/src"],
+      "@feedma/nest-typeorm/*": ["packages/typeorm/src/*"]
     }
   }
 }

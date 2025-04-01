@@ -1,4 +1,4 @@
-import uuid from 'uuid';
+import * as uuidModule from 'uuid';
 import { ClsModule, ClsService } from 'nestjs-cls';
 import { Test, TestingModule } from '@nestjs/testing';
 import { callHandlerMock, executionContextMock } from '@feedma/nest-testing';
@@ -8,7 +8,7 @@ import { IRequestContext } from '../interfaces/request-context.interface';
 import { useContextRequest } from '../helpers/use-context-request.helper';
 
 jest.mock('../helpers/use-context-request.helper');
-jest.mock('uuid', () => ({ v4: jest.fn() }));
+jest.mock('uuid', () => ({ v4: jest.fn().mockReturnValue('5a470513-7316-493b-b0bc-ce13dc16f543') }));
 
 describe('RequestInterceptor', () => {
   let interceptor: RequestInterceptor;
@@ -31,7 +31,7 @@ describe('RequestInterceptor', () => {
 
     interceptor = module.get<RequestInterceptor>(RequestInterceptor);
     cls = module.get<ClsService<IRequestContext>>(ClsService);
-    jest.mocked(uuid.v4).mockReturnValue(UUID);
+    // UUID is already mocked in the jest.mock call above
   });
 
   it('should be defined', () => {

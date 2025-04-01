@@ -34,27 +34,27 @@
     "url": "https://github.com/feedma/feedma-nest-modules/issues"
   },
   "devDependencies": {
-    "@nestjs/common": "10.3.8",
-    "@nestjs/config": "3.2.2",
-    "@nestjs/core": "10.4.4",
-    "@nestjs/graphql": "12.1.1",
-    "@types/uuid": "9.0.8",
-    "nest-winston": "1.9.4",
-    "nestjs-cls": "4.3.0",
+    "@nestjs/common": "11.0.12",
+    "@nestjs/config": "4.0.2",
+    "@nestjs/core": "11.0.12",
+    "@nestjs/graphql": "13.0.4",
+    "@types/uuid": "10.0.0",
+    "nest-winston": "1.10.2",
+    "nestjs-cls": "5.4.2",
     "reflect-metadata": "0.2.2",
-    "uuid": "9.0.1"
+    "uuid": "11.1.0"
   },
   "peerDependencies": {
-    "@nestjs/common": "10.x",
-    "@nestjs/config": "3.x",
-    "@nestjs/core": "10.x",
-    "@nestjs/graphql": "12.x",
-    "@nestjs/testing": "10.x",
-    "@types/uuid": "9.x",
+    "@nestjs/common": "11.x",
+    "@nestjs/config": "4.x",
+    "@nestjs/core": "11.x",
+    "@nestjs/graphql": "13.x",
+    "@nestjs/testing": "11.x",
+    "@types/uuid": "10.x",
     "nest-winston": "1.x",
-    "nestjs-cls": "4.x",
+    "nestjs-cls": "5.x",
     "reflect-metadata": "^0.2.x",
-    "uuid": "9.x"
+    "uuid": "11.x"
   },
   "publishConfig": {
     "access": "restricted",

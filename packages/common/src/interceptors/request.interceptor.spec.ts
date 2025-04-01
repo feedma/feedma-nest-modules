@@ -8,7 +8,7 @@ import { IRequestContext } from '../interfaces/request-context.interface';
 import { useContextRequest } from '../helpers/use-context-request.helper';
 
 jest.mock('../helpers/use-context-request.helper');
-jest.mock('uuid', () => ({ v4: jest.fn().mockReturnValue('5a470513-7316-493b-b0bc-ce13dc16f543') }));
+jest.mock('uuid', () => ({ v4: jest.fn(() => '5a470513-7316-493b-b0bc-ce13dc16f543') }));
 
 describe('RequestInterceptor', () => {
   let interceptor: RequestInterceptor;
@@ -76,7 +76,7 @@ describe('RequestInterceptor', () => {
       },
     };
     jest.spyOn(cls, 'set');
-    (useContextRequest as jest.Mock).mockResolvedValue(request);
+    (useContextRequest as jest.Mock).mockReturnValue(request);
 
     await cls.runWith({} as IRequestContext, async () => {
       await interceptor.intercept(executionContextMock, callHandlerMock);

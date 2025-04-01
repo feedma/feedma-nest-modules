@@ -40,7 +40,7 @@
     "@nestjs/graphql": "13.0.4",
     "graphql-scalars": "1.24.2",
     "graphql-upload-ts": "2.1.2",
-    "graphql-ws": "5.15.0",
+    "graphql-ws": "6.0.4",
     "nestjs-cls": "5.4.2",
     "reflect-metadata": "0.2.2"
   },
@@ -52,7 +52,7 @@
     "@nestjs/testing": "11.x",
     "graphql-scalars": "1.x",
     "graphql-upload-ts": "2.x",
-    "graphql-ws": "5.x",
+    "graphql-ws": "6.x",
     "nestjs-cls": "5.x",
     "reflect-metadata": "^0.2.x"
   },

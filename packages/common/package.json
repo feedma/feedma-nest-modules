@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-common",
-  "version": "0.0.9",
+  "version": "0.0.10-alpha.1",
   "description": "Common resources for nest services",
   "keywords": [
     "nest",

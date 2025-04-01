@@ -1,10 +1,11 @@
 {
-  "name": "@feedma/nest-graphql",
-  "version": "0.0.3-alpha.1",
-  "description": "Common resources for graphql services",
+  "name": "@feedma/nest-typeorm",
+  "version": "0.0.1-alpha.1",
+  "description": "Typeorm resources for nest services",
   "keywords": [
     "nest",
-    "graphql"
+    "typeorm",
+    "database"
   ],
   "author": "Eduardo Salazar <eduardo.develop@gmail.com>",
   "homepage": "https://github.com/feedma/feedma-nest-modules#readme",
@@ -37,24 +38,20 @@
     "@nestjs/common": "11.0.12",
     "@nestjs/config": "4.0.2",
     "@nestjs/core": "11.0.12",
-    "@nestjs/graphql": "13.0.4",
-    "graphql-scalars": "1.24.2",
-    "graphql-upload-ts": "2.1.2",
-    "graphql-ws": "6.0.4",
-    "nestjs-cls": "5.4.2",
-    "reflect-metadata": "0.2.2"
+    "@nestjs/typeorm": "^11.0.0",
+    "nestjs-typeorm-paginate": "^4.1.0",
+    "reflect-metadata": "0.2.2",
+    "typeorm": "^0.3.21"
   },
   "peerDependencies": {
     "@nestjs/common": "11.x",
     "@nestjs/config": "4.x",
     "@nestjs/core": "11.x",
-    "@nestjs/graphql": "13.x",
     "@nestjs/testing": "11.x",
-    "graphql-scalars": "1.x",
-    "graphql-upload-ts": "2.x",
-    "graphql-ws": "6.x",
-    "nestjs-cls": "5.x",
-    "reflect-metadata": "^0.2.x"
+    "@nestjs/typeorm": "11.x",
+    "nestjs-typeorm-paginate": "4.x",
+    "reflect-metadata": "^0.2.x",
+    "typeorm": "^0.3.x"
   },
   "publishConfig": {
     "access": "restricted",

@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-graphql",
-  "version": "0.0.3-alpha.4",
+  "version": "0.0.3",
   "description": "Common resources for graphql services",
   "keywords": [
     "nest",

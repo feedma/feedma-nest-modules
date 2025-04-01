@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-typeorm",
-  "version": "0.0.1-alpha.2",
+  "version": "0.0.1-alpha.3",
   "description": "Typeorm resources for nest services",
   "keywords": [
     "nest",

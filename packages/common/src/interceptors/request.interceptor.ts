@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid';
+import { v4 } from 'uuid';
 import { Observable, tap } from 'rxjs';
 import { ClsService } from 'nestjs-cls';
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
@@ -19,7 +19,7 @@ export class RequestInterceptor implements NestInterceptor {
     const requestId = request.headers['x-request-id'] as string;
     const language = request.headers['accept-language'] || 'en';
 
-    this.cls.set('requestId', requestId || uuid());
+    this.cls.set('requestId', requestId || v4());
     this.cls.set('language', language);
 
     this.logger.log('Incoming request', { url: request.url, method: request.method });

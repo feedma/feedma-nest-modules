@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-typeorm",
-  "version": "0.0.1-alpha.4",
+  "version": "0.0.1",
   "description": "Typeorm resources for nest services",
   "keywords": [
     "nest",
@@ -35,7 +35,7 @@
     "url": "https://github.com/feedma/feedma-nest-modules/issues"
   },
   "devDependencies": {
-    "@nestjs/common": "11.0.12",
+    "@nestjs/common": "11.1.9",
     "@nestjs/config": "4.0.2",
     "@nestjs/core": "11.0.12",
     "@nestjs/typeorm": "^11.0.0",

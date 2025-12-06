@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-testing",
-  "version": "0.0.10-alpha.4",
+  "version": "0.0.10",
   "description": "Testing resources for nest services",
   "keywords": [
     "nest",
@@ -34,7 +34,7 @@
     "url": "https://github.com/feedma/feedma-nest-modules/issues"
   },
   "devDependencies": {
-    "@nestjs/common": "11.0.12",
+    "@nestjs/common": "11.1.9",
     "@nestjs/config": "4.0.2",
     "@nestjs/core": "11.0.12",
     "nestjs-cls": "5.4.2",

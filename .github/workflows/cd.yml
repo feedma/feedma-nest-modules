@@ -32,9 +32,9 @@ jobs:
         with:
           node-version: 22
           registry-url: 'https://registry.npmjs.org'
+          token: ${{ secrets.NPM_TOKEN }}
       - name: Setup
         run: |
-          npm config set //registry.npmjs.org/:_authToken=${{secrets.NPM_TOKEN}}
           git config --global user.name "${{github.actor}}"
           git config --global user.email "${{github.actor}}@users.noreply.github.com"
           git remote set-url origin https://github.com/${{github.repository}}.git
@@ -46,6 +46,7 @@ jobs:
         run: npm run publish:beta
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish_stable:
     if: github.ref_name == 'main' && github.event.pull_request.merged == true
@@ -60,9 +61,9 @@ jobs:
         with:
           node-version: 22
           registry-url: 'https://registry.npmjs.org'
+          token: ${{ secrets.NPM_TOKEN }}
       - name: Setup
         run: |
-          npm config set //registry.npmjs.org/:_authToken=${{secrets.NPM_TOKEN}}
           git config --global user.name "${{github.actor}}"
           git config --global user.email "${{github.actor}}@users.noreply.github.com"
           git remote set-url origin https://github.com/${{github.repository}}.git
@@ -74,3 +75,4 @@ jobs:
         run: npm run publish:stable
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

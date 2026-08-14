@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.12](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-testing%400.0.12-beta.3...%40feedma%2Fnest-testing%400.0.12) (2026-08-14)
+
+**Note:** Version bump only for package @feedma/nest-testing
+
 ## [0.0.12-beta.3](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-testing%400.0.12-beta.2...%40feedma%2Fnest-testing%400.0.12-beta.3) (2026-08-14)
 
 **Note:** Version bump only for package @feedma/nest-testing

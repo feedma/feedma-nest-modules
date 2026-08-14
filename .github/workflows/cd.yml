@@ -1,11 +1,17 @@
 name: Publish packages
 
 on:
+  push:
+    branches:
+      - 'feat/**'
+      - 'fix/**'
+      - 'hotfix/**'
   pull_request:
     branches:
       - main
       - develop
     types: [closed]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -19,8 +25,35 @@ jobs:
       - run: npm ci
       - run: npm test
 
+  # Every push to a working branch gets a throwaway build on the `canary`
+  # dist-tag. Canary neither commits nor tags, so it leaves no trace in git.
+  publish_canary:
+    if: github.event_name == 'push'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history: lerna compares against the last release tag to decide
+          # which packages actually changed.
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+      - name: Publish canary
+        run: npm run publish:canary
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
   publish_beta:
-    if: github.ref_name == 'develop' && github.event.pull_request.merged == true
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop'
     needs: test
     runs-on: ubuntu-latest
     permissions:
@@ -28,6 +61,12 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Check out the branch, not the SHA that triggered the run. `lerna
+          # version` pushes a release commit, so a re-run of this job would
+          # otherwise land behind the remote and abort with EBEHIND.
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -41,14 +80,20 @@ jobs:
         run: |
           npm ci
           npm run build
-      - name: Publish packages
-        run: npm run publish:beta
+      # Versioning and publishing are separate steps on purpose. If the publish
+      # fails, re-running the job is safe: the version step finds nothing to
+      # bump and the publish step uploads whatever is missing from the registry.
+      - name: Version
+        run: npm run version:beta
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish
+        run: npm run publish:beta
+        env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish_stable:
-    if: github.ref_name == 'main' && github.event.pull_request.merged == true
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     needs: test
     runs-on: ubuntu-latest
     permissions:
@@ -56,6 +101,9 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -69,8 +117,37 @@ jobs:
         run: |
           npm ci
           npm run build
-      - name: Publish packages
-        run: npm run publish:stable
+      - name: Version
+        run: npm run version:stable
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish
+        run: npm run publish:stable
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # Manual recovery. Publishes any package whose version is already committed
+  # and tagged but never reached the registry, without versioning anything.
+  publish_missing:
+    if: github.event_name == 'workflow_dispatch'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+      - name: Publish missing versions
+        run: npm run publish:missing
+        env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

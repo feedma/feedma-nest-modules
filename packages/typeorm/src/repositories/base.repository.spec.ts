@@ -22,7 +22,9 @@ function buildRepository(): BaseRepository<TestEntity> {
   return new BaseRepository(TestEntity, dataSource);
 }
 
-function buildPage(items: TestEntity[]): Pagination<TestEntity> {
+// Builds the value the mocked `paginate` resolves to. This is a `Pagination`, the
+// shape nestjs-typeorm-paginate returns — not the `IPage` shape from nest-common.
+function buildPagination(items: TestEntity[]): Pagination<TestEntity> {
   return {
     items,
     meta: {
@@ -39,7 +41,7 @@ function buildPage(items: TestEntity[]): Pagination<TestEntity> {
 describe('BaseRepository', () => {
   beforeEach(() => {
     paginateMock.mockReset();
-    paginateMock.mockResolvedValue(buildPage([]));
+    paginateMock.mockResolvedValue(buildPagination([]));
   });
 
   it('should be defined', () => {
@@ -97,16 +99,16 @@ describe('BaseRepository', () => {
 
     it('resolves a single promise, not a nested one', async () => {
       const repository = buildRepository();
-      const page = buildPage([]);
-      paginateMock.mockResolvedValue(page);
+      const pagination = buildPagination([]);
+      paginateMock.mockResolvedValue(pagination);
 
-      await expect(repository.paginate()).resolves.toBe(page);
+      await expect(repository.paginate()).resolves.toBe(pagination);
     });
 
     it('exposes the entity type in the paginated result', async () => {
       const repository = buildRepository();
       const entity = new TestEntity();
-      paginateMock.mockResolvedValue(buildPage([entity]));
+      paginateMock.mockResolvedValue(buildPagination([entity]));
 
       // Compile-time guard: callers must get `TestEntity[]`, not `unknown[]`.
       const result: Pagination<TestEntity> = await repository.paginate();

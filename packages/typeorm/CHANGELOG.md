@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.3-beta.1](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-typeorm%400.0.3-beta.0...%40feedma%2Fnest-typeorm%400.0.3-beta.1) (2026-08-14)
+
+### Bug Fixes
+
+* stop requiring test-only and types-only peers ([08ad419](https://github.com/feedma/feedma-nest-modules/commit/08ad419960924469240239e2f033167bff1e451c)), closes [#111](https://github.com/feedma/feedma-nest-modules/issues/111)
+
+
 ## [0.0.3-beta.0](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-typeorm%400.0.2...%40feedma%2Fnest-typeorm%400.0.3-beta.0) (2026-08-14)
 
 **Note:** Version bump only for package @feedma/nest-typeorm

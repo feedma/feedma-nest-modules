@@ -37,18 +37,19 @@
     "@nestjs/common": "11.1.9",
     "@nestjs/config": "4.0.2",
     "@nestjs/core": "11.0.12",
+    "@nestjs/graphql": "13.0.4",
     "nestjs-cls": "5.4.2",
     "reflect-metadata": "0.2.2"
   },
   "peerDependencies": {
     "@nestjs/common": "11.x",
     "@nestjs/core": "11.x",
-    "@nestjs/testing": "11.x",
+    "@nestjs/graphql": "13.x",
     "nestjs-cls": "5.x",
     "reflect-metadata": "^0.2.x"
   },
   "peerDependenciesMeta": {
-    "@nestjs/testing": {
+    "@nestjs/graphql": {
       "optional": true
     }
   },

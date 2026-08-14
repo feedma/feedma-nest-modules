@@ -47,16 +47,10 @@
     "@nestjs/common": "11.x",
     "@nestjs/config": "4.x",
     "@nestjs/core": "11.x",
-    "@nestjs/testing": "11.x",
     "@nestjs/typeorm": "11.x",
     "nestjs-typeorm-paginate": "4.x",
     "reflect-metadata": "^0.2.x",
     "typeorm": "^0.3.x"
-  },
-  "peerDependenciesMeta": {
-    "@nestjs/testing": {
-      "optional": true
-    }
   },
   "publishConfig": {
     "access": "public",

@@ -49,17 +49,11 @@
     "@nestjs/config": "4.x",
     "@nestjs/core": "11.x",
     "@nestjs/graphql": "13.x",
-    "@nestjs/testing": "11.x",
     "graphql-scalars": "1.x",
     "graphql-upload-ts": "2.x",
     "graphql-ws": "6.x",
     "nestjs-cls": "5.x",
     "reflect-metadata": "^0.2.x"
-  },
-  "peerDependenciesMeta": {
-    "@nestjs/testing": {
-      "optional": true
-    }
   },
   "publishConfig": {
     "access": "public",

@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-typeorm",
-  "version": "0.0.2",
+  "version": "0.0.3-beta.2",
   "description": "Typeorm resources for nest services",
   "keywords": [
     "nest",
@@ -47,7 +47,6 @@
     "@nestjs/common": "11.x",
     "@nestjs/config": "4.x",
     "@nestjs/core": "11.x",
-    "@nestjs/testing": "11.x",
     "@nestjs/typeorm": "11.x",
     "nestjs-typeorm-paginate": "4.x",
     "reflect-metadata": "^0.2.x",

@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-graphql",
-  "version": "0.0.4",
+  "version": "0.0.5-beta.2",
   "description": "Common resources for graphql services",
   "keywords": [
     "nest",
@@ -49,7 +49,6 @@
     "@nestjs/config": "4.x",
     "@nestjs/core": "11.x",
     "@nestjs/graphql": "13.x",
-    "@nestjs/testing": "11.x",
     "graphql-scalars": "1.x",
     "graphql-upload-ts": "2.x",
     "graphql-ws": "6.x",

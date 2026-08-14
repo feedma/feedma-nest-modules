@@ -53,6 +53,11 @@
     "reflect-metadata": "^0.2.x",
     "typeorm": "^0.3.x"
   },
+  "peerDependenciesMeta": {
+    "@nestjs/testing": {
+      "optional": true
+    }
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"

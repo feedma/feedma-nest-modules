@@ -4,12 +4,13 @@ import { join } from 'path';
 const PACKAGES_ROOT = join(__dirname, '..', 'packages');
 
 /**
- * Peers npm cannot tell apart from runtime ones, but that shipped code never
- * needs. Since npm 7 auto-installs mandatory peers, and the peers of a
- * production dependency are themselves production, leaving these required
- * puts them in every consumer's `npm ci --omit=dev` tree.
+ * Packages no shipped code imports, so declaring them as peers asserts
+ * something untrue. Marking them optional is not enough: an optional peer edge
+ * still counts as a reference from a production dependency, so npm cannot mark
+ * the package dev-only for a consumer that also declares it itself, and it
+ * survives `npm ci --omit=dev`. They must not be peers at all.
  */
-const DEV_ONLY_PEERS = [/^@types\//, /^@nestjs\/testing$/];
+const NON_PEERS = [/^@types\//, /^@nestjs\/testing$/];
 
 interface IPackageManifest {
   name: string;
@@ -24,8 +25,8 @@ function readManifests(): IPackageManifest[] {
     .map((path) => JSON.parse(readFileSync(path, 'utf8')) as IPackageManifest);
 }
 
-function isDevOnly(peer: string): boolean {
-  return DEV_ONLY_PEERS.some((pattern) => pattern.test(peer));
+function isNonPeer(peer: string): boolean {
+  return NON_PEERS.some((pattern) => pattern.test(peer));
 }
 
 describe('peer dependencies', () => {
@@ -36,26 +37,11 @@ describe('peer dependencies', () => {
   });
 
   it.each(manifests.map((manifest) => [manifest.name, manifest] as const))(
-    '%s declares no mandatory dev-only peer',
+    '%s declares no package that shipped code never needs',
     (_name, manifest) => {
-      const mandatory = Object.keys(manifest.peerDependencies ?? {})
-        .filter(isDevOnly)
-        .filter((peer) => manifest.peerDependenciesMeta?.[peer]?.optional !== true);
+      const declared = Object.keys(manifest.peerDependencies ?? {}).filter(isNonPeer);
 
-      expect(mandatory).toEqual([]);
-    },
-  );
-
-  it.each(manifests.map((manifest) => [manifest.name, manifest] as const))(
-    '%s declares no @types package as a peer at all',
-    (_name, manifest) => {
-      // A types-only package has no runtime output, so it is never something a
-      // consumer must provide — not even optionally.
-      const typePeers = Object.keys(manifest.peerDependencies ?? {}).filter((peer) =>
-        peer.startsWith('@types/'),
-      );
-
-      expect(typePeers).toEqual([]);
+      expect(declared).toEqual([]);
     },
   );
 

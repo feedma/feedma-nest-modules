@@ -1,5 +1,7 @@
 import { of } from 'rxjs';
-import { GraphQLExecutionContext } from '@nestjs/graphql/dist/services/gql-execution-context';
+// Type-only, and from the public entry point rather than dist/ internals, so
+// @nestjs/graphql stays an optional peer: nothing is required at runtime.
+import type { GraphQLExecutionContext } from '@nestjs/graphql';
 import { ArgumentsHost, CallHandler, ExecutionContext } from '@nestjs/common';
 import { HttpArgumentsHost } from '@nestjs/common/interfaces';
 

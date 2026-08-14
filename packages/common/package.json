@@ -56,6 +56,11 @@
     "reflect-metadata": "^0.2.x",
     "uuid": "11.x"
   },
+  "peerDependenciesMeta": {
+    "@nestjs/graphql": {
+      "optional": true
+    }
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"

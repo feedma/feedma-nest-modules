@@ -47,6 +47,11 @@
     "nestjs-cls": "5.x",
     "reflect-metadata": "^0.2.x"
   },
+  "peerDependenciesMeta": {
+    "@nestjs/testing": {
+      "optional": true
+    }
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"

@@ -17,11 +17,12 @@
     "prepare": "husky",
     "typecheck": "tsc --project ./tsconfig.json --noEmit",
     "prebuild": "rimraf lib",
-    "publish:canary": "npx lerna publish --canary --yes --loglevel=verbose",
+    "publish:canary": "npx lerna publish --canary --pre-dist-tag canary --yes --loglevel=verbose",
     "version:beta": "npx lerna version --yes --conventional-commits --conventional-prerelease --create-release github --preid beta --loglevel=verbose",
-    "publish:beta": "npx lerna publish --yes --conventional-commits --conventional-prerelease --create-release github --loglevel=verbose",
+    "publish:beta": "npx lerna publish from-package --pre-dist-tag beta --yes --loglevel=verbose",
     "version:stable": "npx lerna version --yes --conventional-commits --conventional-graduate --create-release github --loglevel=verbose",
-    "publish:stable": "npx lerna publish --yes --conventional-commits --conventional-graduate --create-release github --loglevel=verbose",
+    "publish:stable": "npx lerna publish from-package --yes --loglevel=verbose",
+    "publish:missing": "npx lerna publish from-package --yes --loglevel=verbose",
     "publish:dev": "npx lerna run build && npx lerna run publish:dev"
   },
   "workspaces": [

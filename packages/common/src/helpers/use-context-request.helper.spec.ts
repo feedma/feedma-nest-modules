@@ -26,7 +26,9 @@ describe('useContextRequest()', () => {
     jest.spyOn(gqlExecutionContextMock, 'getContext').mockReturnValue(gqlContext);
     jest
       .spyOn(GqlExecutionContext, 'create')
-      .mockReturnValue(gqlExecutionContextMock as unknown as ReturnType<typeof GqlExecutionContext.create>);
+      .mockReturnValue(
+        gqlExecutionContextMock as unknown as ReturnType<typeof GqlExecutionContext.create>,
+      );
 
     expect(await useContextRequest(executionContextMock)).toBe(gqlRequest);
   });

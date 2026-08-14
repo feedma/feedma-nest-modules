@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-graphql",
-  "version": "0.0.3",
+  "version": "0.0.4-alpha.5",
   "description": "Common resources for graphql services",
   "keywords": [
     "nest",
@@ -57,7 +57,7 @@
     "reflect-metadata": "^0.2.x"
   },
   "publishConfig": {
-    "access": "restricted",
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   }
 }

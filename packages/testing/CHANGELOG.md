@@ -3,6 +3,54 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 0.0.11-alpha.5 (2026-08-14)
+
+**Note:** Version bump only for package @feedma/nest-testing
+
+
+
+
+
+## 0.0.11-alpha.4 (2025-12-06)
+
+**Note:** Version bump only for package @feedma/nest-testing
+
+
+
+
+
+## 0.0.11-alpha.3 (2025-12-06)
+
+**Note:** Version bump only for package @feedma/nest-testing
+
+
+
+
+
+## 0.0.11-alpha.2 (2025-12-06)
+
+**Note:** Version bump only for package @feedma/nest-testing
+
+
+
+
+
+## 0.0.11-alpha.1 (2025-12-06)
+
+**Note:** Version bump only for package @feedma/nest-testing
+
+
+
+
+
+## 0.0.11-alpha.0 (2025-12-06)
+
+**Note:** Version bump only for package @feedma/nest-testing
+
+
+
+
+
 ## 0.0.10 (2025-04-01)
 
 **Note:** Version bump only for package @feedma/nest-testing

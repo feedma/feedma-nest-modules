@@ -8,7 +8,7 @@ import {
   SelectQueryBuilder,
   FindManyOptions,
 } from 'typeorm';
-import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
+import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
 
 export type ID = number | string;
 export const defaultPaginationOptions = {
@@ -24,17 +24,17 @@ export class BaseRepository<Entity> extends Repository<Entity> {
   paginate(
     queryBuilder?: SelectQueryBuilder<Entity>,
     paginationOptions?: IPaginationOptions,
-  ): Promise<ReturnType<typeof paginate>>;
+  ): Promise<Pagination<Entity>>;
 
   paginate(
     paginationOptions?: IPaginationOptions,
     findOptions?: FindOptionsWhere<Entity> | FindManyOptions<Entity>,
-  ): Promise<ReturnType<typeof paginate>>;
+  ): Promise<Pagination<Entity>>;
 
   async paginate(
     target?: SelectQueryBuilder<Entity> | IPaginationOptions,
     customOptions?: IPaginationOptions | FindOptionsWhere<Entity> | FindManyOptions<Entity>,
-  ): Promise<ReturnType<typeof paginate>> {
+  ): Promise<Pagination<Entity>> {
     //TODO: make defaultPaginationOptions configurable form outside
     if (target instanceof SelectQueryBuilder) {
       return paginate(target, { ...defaultPaginationOptions, ...customOptions });

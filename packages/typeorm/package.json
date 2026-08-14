@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-typeorm",
-  "version": "0.0.1",
+  "version": "0.0.2-alpha.5",
   "description": "Typeorm resources for nest services",
   "keywords": [
     "nest",
@@ -54,7 +54,7 @@
     "typeorm": "^0.3.x"
   },
   "publishConfig": {
-    "access": "restricted",
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   }
 }

@@ -3,6 +3,54 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 0.0.4-alpha.5 (2026-08-14)
+
+**Note:** Version bump only for package @feedma/nest-graphql
+
+
+
+
+
+## 0.0.4-alpha.4 (2025-12-06)
+
+**Note:** Version bump only for package @feedma/nest-graphql
+
+
+
+
+
+## 0.0.4-alpha.3 (2025-12-06)
+
+**Note:** Version bump only for package @feedma/nest-graphql
+
+
+
+
+
+## 0.0.4-alpha.2 (2025-12-06)
+
+**Note:** Version bump only for package @feedma/nest-graphql
+
+
+
+
+
+## 0.0.4-alpha.1 (2025-12-06)
+
+**Note:** Version bump only for package @feedma/nest-graphql
+
+
+
+
+
+## 0.0.4-alpha.0 (2025-12-06)
+
+**Note:** Version bump only for package @feedma/nest-graphql
+
+
+
+
+
 ## 0.0.3 (2025-04-01)
 
 **Note:** Version bump only for package @feedma/nest-graphql

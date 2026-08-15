@@ -2,7 +2,7 @@
 
 Source of truth for design and decisions in `feedma-nest-modules`. Both humans and AI agents read and write here.
 
-Mirrors the doc system used in the `ebook-reader-workspace`, so a reader moving between the two repositories finds the same shapes.
+Mirrors the doc system used across the organisation's other repositories, so a reader moving between them finds the same shapes.
 
 ## What lives where
 

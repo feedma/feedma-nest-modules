@@ -41,13 +41,13 @@ try to standardise.
 `nest-typeorm` offers one pagination contract: offset pages, via
 `BaseRepository.paginate`. `nest-common` owns the types.
 
-Nothing in the organisation implements cursor pagination today. The consuming
-application has a discovery feed and search over a shared catalogue on its
-roadmap; neither is built.
+No application consuming these packages implements cursor pagination today. The
+cases that would need it — a discovery feed, and search over a catalogue written
+to by someone other than the reader — are on a roadmap, not built.
 
-One adjacent implementation exists and is **not** a cursor: `ebook-reader-api`
-reads book content by range over a dense contiguous index
-(`ADR-0001` in the `ebook-reader-workspace`).
+One adjacent implementation exists and is **not** a cursor: long-form content
+read by range over a dense contiguous index, which works because the index is
+dense and would not generalise.
 
 ## Proposal
 
@@ -97,8 +97,9 @@ publish.
 
 ### Recommendation: wait for an implementation to lift
 
-Do not design this in the abstract. Wait until the consuming application builds
-its discovery feed, watch it work, then lift the contract from it.
+Do not design this in the abstract. Wait until a consuming application builds a
+feed or a search over a shared collection, watch it work, then lift the contract
+from it.
 
 The argument is not YAGNI in general — it is specific and local. **Designing a
 contract with no producer is exactly how `totalMatches` happened.** Three fields

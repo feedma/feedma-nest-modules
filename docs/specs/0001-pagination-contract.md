@@ -1,10 +1,10 @@
 ---
 id: SPEC-0001
 title: Pagination Contract
-status: proposed
+status: accepted
 scope: [common, typeorm, graphql]
 created: 2026-08-14
-updated: 2026-08-14
+updated: 2026-08-15
 authors: [esalazarv]
 related:
   rfcs: [RFC-0001]

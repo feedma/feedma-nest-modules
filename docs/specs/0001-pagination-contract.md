@@ -249,9 +249,10 @@ on typeorm or any paginator.
 `Promise<IPage<Entity>>`. Both overloads change; the branch dispatch on
 `target instanceof SelectQueryBuilder` is unchanged.
 
-An unexported module-private function translates the paginator's meta into
-`IPagination`. It is the only place in the repository that names a
-`nestjs-typeorm-paginate` type.
+An exported `toPagination` function, in its own module, translates the
+paginator's meta into `IPagination`. It is the only place in the package that
+names a `nestjs-typeorm-paginate` type, and it stays absent from the package
+index, so replacing the paginator remains an internal change.
 
 This package gains a declared dependency on `@feedma/nest-common`. It must be a
 peer entry in `package.json`, not only a `tsconfig.json` project reference — a

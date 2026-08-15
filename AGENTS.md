@@ -98,7 +98,9 @@ Three guards enforce what the manifests must say. They run in the normal suite:
 
 A dependency between two packages in this repository must be a declared peer in `package.json`, not only a `tsconfig.json` project reference. A project reference satisfies the compiler here and is invisible to npm.
 
-Peer ranges over an internal package must admit prereleases — `>=0.0.12-0 <1`, not `0.x` — because consumers install from the beta channel and `0.x` excludes prereleases.
+**An internal package is a `dependency`, never a peer.** A peer range cannot work while this repository publishes a beta channel: semver only lets a prerelease satisfy a range when some comparator shares its exact `major.minor.patch` *and* carries a prerelease of its own, so any range admits the prereleases of one version and rejects those of the next. `0.x`, `*`, `>=0.0.12` and `>=0.0.0-0 <1.0.0-0` all reject `0.0.13-beta.0`; only the resolver's `includePrerelease` flag accepts it, and that cannot be written in a manifest. As a dependency, lerna maintains the range on every version bump.
+
+This costs the protection a peer would give. `instanceof` checks and Nest injection tokens depend on class identity, so two copies of an internal package break exception handling and dependency injection silently. Inside this repository npm links the workspace package and no second copy appears; for a consumer it stays possible if their own range diverges, which is why the ranges are left to lerna rather than pinned by hand.
 
 ## Commits
 

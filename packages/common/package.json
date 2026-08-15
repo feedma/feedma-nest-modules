@@ -38,9 +38,11 @@
     "@nestjs/config": "4.0.2",
     "@nestjs/core": "11.0.12",
     "@nestjs/graphql": "13.0.4",
+    "express": "5.1.0",
     "nest-winston": "1.10.2",
     "nestjs-cls": "5.4.2",
     "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2",
     "uuid": "11.1.0"
   },
   "peerDependencies": {
@@ -48,13 +50,18 @@
     "@nestjs/config": "4.x",
     "@nestjs/core": "11.x",
     "@nestjs/graphql": "13.x",
+    "express": "5.x",
     "nest-winston": "1.x",
     "nestjs-cls": "5.x",
     "reflect-metadata": "^0.2.x",
+    "rxjs": "7.x",
     "uuid": "11.x"
   },
   "peerDependenciesMeta": {
     "@nestjs/graphql": {
+      "optional": true
+    },
+    "express": {
       "optional": true
     }
   },

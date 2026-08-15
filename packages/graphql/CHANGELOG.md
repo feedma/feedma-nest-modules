@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.1.0](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-graphql%400.0.6...%40feedma%2Fnest-graphql%400.1.0) (2026-08-15)
+
+### Bug Fixes
+
+- **graphql:** pin Pagination nullable fields to Float via type thunk ([4a59603](https://github.com/feedma/feedma-nest-modules/commit/4a5960378fcb533bf008e899bd0ba56e831d7729))
+
+### Features
+
+- **graphql:** match the Pagination entity to the six-field contract ([328d05c](https://github.com/feedma/feedma-nest-modules/commit/328d05c27682331db39b229ffa4629caa30d3044))
+
 ## [0.0.6](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-graphql%400.0.6-beta.0...%40feedma%2Fnest-graphql%400.0.6) (2026-08-15)
 
 **Note:** Version bump only for package @feedma/nest-graphql

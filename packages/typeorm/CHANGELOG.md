@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.1.0](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-typeorm%400.0.4...%40feedma%2Fnest-typeorm%400.1.0) (2026-08-15)
+
+### Bug Fixes
+
+- **typeorm:** collapse paginate's two IPage return sites into one ([3e352e1](https://github.com/feedma/feedma-nest-modules/commit/3e352e1f657c27d0519e37d59f2e8f0e9a2cc003))
+- **typeorm:** stop explicit undefined from defeating pagination defaults ([02ffdfd](https://github.com/feedma/feedma-nest-modules/commit/02ffdfd82aaa5b04fa7d0274f0d72a7d1545438f))
+
+### Features
+
+- **typeorm:** return IPage from paginate and accept IPaginationParams ([e8644c1](https://github.com/feedma/feedma-nest-modules/commit/e8644c1fe21851dac690d994c6ddee1fda63dcde))
+- **typeorm:** translate the paginator meta into IPagination ([542c94b](https://github.com/feedma/feedma-nest-modules/commit/542c94ba3313749258905b30fed8e75de0318a65))
+
 ## [0.0.4](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-typeorm%400.0.4-beta.0...%40feedma%2Fnest-typeorm%400.0.4) (2026-08-15)
 
 **Note:** Version bump only for package @feedma/nest-typeorm

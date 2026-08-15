@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.1.0](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-common%400.0.13...%40feedma%2Fnest-common%400.1.0) (2026-08-15)
+
+### Features
+
+- **common:** drop totalMatches from IPagination ([bc7ebce](https://github.com/feedma/feedma-nest-modules/commit/bc7ebcedda4294bda55b5a6f251e702a13b7b4aa))
+
 ## [0.0.13](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-common%400.0.13-beta.0...%40feedma%2Fnest-common%400.0.13) (2026-08-15)
 
 **Note:** Version bump only for package @feedma/nest-common

@@ -9,6 +9,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 - declare every package the shipped code imports ([0c283ad](https://github.com/feedma/feedma-nest-modules/commit/0c283ad5ed742b9c4e430e28d1a1ef108da8ee51))
 
+## [0.0.12](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-common%400.0.12-beta.2...%40feedma%2Fnest-common%400.0.12) (2026-08-14)
+
+**Note:** Version bump only for package @feedma/nest-common
+
 ## [0.0.12-beta.2](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-common%400.0.12-beta.1...%40feedma%2Fnest-common%400.0.12-beta.2) (2026-08-14)
 
 ### Bug Fixes

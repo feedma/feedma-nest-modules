@@ -29,7 +29,8 @@ export const defaultPaginationOptions = {
  * correcting it would hide a caller's error.
  */
 function toPaginateOptions(params?: IPaginationParams): IPaginationOptions {
-  const { page, limit } = { ...defaultPaginationOptions, ...params };
+  const page = params?.page ?? defaultPaginationOptions.page;
+  const limit = params?.limit ?? defaultPaginationOptions.limit;
 
   return { page, limit: Math.max(1, limit) };
 }

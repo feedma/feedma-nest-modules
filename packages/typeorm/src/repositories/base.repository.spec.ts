@@ -67,6 +67,17 @@ describe('BaseRepository', () => {
       expect(paginateMock).toHaveBeenCalledWith(queryBuilder, { page: 3, limit: 5 });
     });
 
+    it('applies the default pagination params to the given query builder', async () => {
+      const repository = buildRepository();
+      const queryBuilder = Object.create(
+        SelectQueryBuilder.prototype,
+      ) as SelectQueryBuilder<TestEntity>;
+
+      await repository.paginate(queryBuilder);
+
+      expect(paginateMock).toHaveBeenCalledWith(queryBuilder, defaultPaginationOptions);
+    });
+
     it('paginates the repository itself when no query builder is given', async () => {
       const repository = buildRepository();
       const findOptions = { where: { id: 1 } };
@@ -90,6 +101,22 @@ describe('BaseRepository', () => {
       await repository.paginate({ limit: 0 });
 
       expect(paginateMock).toHaveBeenCalledWith(repository, { page: 1, limit: 1 }, undefined);
+    });
+
+    it('clamps a negative limit', async () => {
+      const repository = buildRepository();
+
+      await repository.paginate({ limit: -5 });
+
+      expect(paginateMock).toHaveBeenCalledWith(repository, { page: 1, limit: 1 }, undefined);
+    });
+
+    it('falls back to the default for an explicitly undefined field', async () => {
+      const repository = buildRepository();
+
+      await repository.paginate({ page: 2, limit: undefined });
+
+      expect(paginateMock).toHaveBeenCalledWith(repository, { page: 2, limit: 15 }, undefined);
     });
 
     it('returns the contract shape rather than the paginator shape', async () => {

@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.6-beta.0](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-graphql%400.0.5-beta.3...%40feedma%2Fnest-graphql%400.0.6-beta.0) (2026-08-15)
+
+### Bug Fixes
+
+- **graphql:** depend on nest-common rather than peer it ([25030e9](https://github.com/feedma/feedma-nest-modules/commit/25030e93e72b2d45548143872ad46fe0ce58d635)), closes [#122](https://github.com/feedma/feedma-nest-modules/issues/122) [#122](https://github.com/feedma/feedma-nest-modules/issues/122)
+- **graphql:** widen the nest-common peer range to \* ([fef1ce2](https://github.com/feedma/feedma-nest-modules/commit/fef1ce2e3275cd9bdcf07aa6da240fdcef725f4c))
+
+## 0.0.5 (2026-08-14)
+
+## [0.0.5-beta.3](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-graphql%400.0.5-beta.2...%40feedma%2Fnest-graphql%400.0.5-beta.3) (2026-08-15)
+
+### Bug Fixes
+
+- declare every package the shipped code imports ([0c283ad](https://github.com/feedma/feedma-nest-modules/commit/0c283ad5ed742b9c4e430e28d1a1ef108da8ee51))
+
 ## [0.0.5](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-graphql%400.0.5-beta.2...%40feedma%2Fnest-graphql%400.0.5) (2026-08-14)
 
 **Note:** Version bump only for package @feedma/nest-graphql

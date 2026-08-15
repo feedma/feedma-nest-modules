@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-graphql",
-  "version": "0.0.5",
+  "version": "0.0.6-beta.0",
   "description": "Common resources for graphql services",
   "keywords": [
     "nest",
@@ -38,6 +38,7 @@
     "@nestjs/config": "4.0.2",
     "@nestjs/core": "11.0.12",
     "@nestjs/graphql": "13.0.4",
+    "graphql": "16.11.0",
     "graphql-scalars": "1.24.2",
     "graphql-upload-ts": "2.1.2",
     "graphql-ws": "6.0.4",
@@ -45,10 +46,12 @@
     "reflect-metadata": "0.2.2"
   },
   "peerDependencies": {
+    "@feedma/nest-common": "*",
     "@nestjs/common": "11.x",
     "@nestjs/config": "4.x",
     "@nestjs/core": "11.x",
     "@nestjs/graphql": "13.x",
+    "graphql": "16.x",
     "graphql-scalars": "1.x",
     "graphql-upload-ts": "2.x",
     "graphql-ws": "6.x",

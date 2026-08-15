@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.4-beta.0](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-typeorm%400.0.3...%40feedma%2Fnest-typeorm%400.0.4-beta.0) (2026-08-15)
+
+**Note:** Version bump only for package @feedma/nest-typeorm
+
 ## [0.0.3](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-typeorm%400.0.3-beta.2...%40feedma%2Fnest-typeorm%400.0.3) (2026-08-14)
 
 **Note:** Version bump only for package @feedma/nest-typeorm

@@ -1,6 +1,6 @@
 {
   "name": "@feedma/nest-testing",
-  "version": "0.0.12",
+  "version": "0.0.13-beta.0",
   "description": "Testing resources for nest services",
   "keywords": [
     "nest",
@@ -39,14 +39,16 @@
     "@nestjs/core": "11.0.12",
     "@nestjs/graphql": "13.0.4",
     "nestjs-cls": "5.4.2",
-    "reflect-metadata": "0.2.2"
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
   },
   "peerDependencies": {
     "@nestjs/common": "11.x",
     "@nestjs/core": "11.x",
     "@nestjs/graphql": "13.x",
     "nestjs-cls": "5.x",
-    "reflect-metadata": "^0.2.x"
+    "reflect-metadata": "^0.2.x",
+    "rxjs": "7.x"
   },
   "peerDependenciesMeta": {
     "@nestjs/graphql": {

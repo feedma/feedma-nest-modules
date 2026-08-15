@@ -12,8 +12,11 @@ const PACKAGES_ROOT = join(__dirname, '..', 'packages');
  */
 const NON_PEERS = [/^@types\//, /^@nestjs\/testing$/];
 
+const INTERNAL_SCOPE = '@feedma/';
+
 interface IPackageManifest {
   name: string;
+  dependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
   peerDependenciesMeta?: Record<string, { optional?: boolean }>;
 }
@@ -42,6 +45,39 @@ describe('peer dependencies', () => {
       const declared = Object.keys(manifest.peerDependencies ?? {}).filter(isNonPeer);
 
       expect(declared).toEqual([]);
+    },
+  );
+
+  it.each(manifests.map((manifest) => [manifest.name, manifest] as const))(
+    '%s references a sibling package as a peer, never a dependency',
+    (_name, manifest) => {
+      // A second copy of a sibling breaks class identity, and class identity is
+      // load-bearing here: `instanceof` checks on the shared exception type, and
+      // Nest injection tokens. A peer resolves to one copy; a dependency can be
+      // duplicated when the consumer's own range diverges.
+      const asDependency = Object.keys(manifest.dependencies ?? {}).filter((name) =>
+        name.startsWith(INTERNAL_SCOPE),
+      );
+
+      expect(asDependency).toEqual([]);
+    },
+  );
+
+  it.each(manifests.map((manifest) => [manifest.name, manifest] as const))(
+    '%s pins every sibling peer to *',
+    (_name, manifest) => {
+      // Any bounded range breaks on the beta channel. Semver only lets a
+      // prerelease satisfy a range when a comparator shares its exact
+      // major.minor.patch and carries a prerelease, so a range admits one
+      // version's prereleases and rejects the next version's. npm treats `*` as
+      // any version, prereleases included — measured, since semver.satisfies
+      // disagrees.
+      const bounded = Object.entries(manifest.peerDependencies ?? {})
+        .filter(([name]) => name.startsWith(INTERNAL_SCOPE))
+        .filter(([, range]) => range !== '*')
+        .map(([name, range]) => `${name}@${range}`);
+
+      expect(bounded).toEqual([]);
     },
   );
 

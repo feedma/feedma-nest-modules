@@ -1,10 +1,22 @@
-# Pagination contract design
+---
+id: SPEC-0001
+title: Pagination Contract
+status: proposed
+scope: [common, typeorm, graphql]
+created: 2026-08-14
+updated: 2026-08-14
+authors: [esalazarv]
+related:
+  rfcs: []
+  specs: []
+  adrs: []
+---
 
-Status: approved, not yet implemented
-Date: 2026-08-14
-Issues: #109, and the adapter noted at the end of #110
+# Pagination Contract
 
-## Problem
+Closes the gaps in `#109`, and the adapter noted at the end of `#110`.
+
+## Context
 
 `IPagination` in `nest-common` declares seven fields. Three of them —
 `totalMatches`, `firstPage` and `lastPage` — have no producer: the meta
@@ -40,7 +52,7 @@ repository, without an implementation and without a definition. That is why no
 paginator produces them and why nobody could articulate what `totalMatches`
 meant: it never had a meaning.
 
-## Decisions
+## Decision
 
 ### `totalMatches` is removed
 
@@ -82,6 +94,10 @@ A caller requesting page 99 of a four-page result gets `items: []` but keeps
 recover, and making the nulls depend on `items.length` would remove it exactly
 when it is needed.
 
+Out-of-range is detected as `page > totalPages`. The contract carries no flag
+for it, deliberately: the fields already present answer the question, and a
+redundant flag is one more thing to keep consistent.
+
 ### The library is internal on both sides
 
 `nestjs-typeorm-paginate` must not appear in any public signature of any
@@ -97,9 +113,16 @@ be built honestly from that: `firstPage: totalItems > 0 ? 1 : null` would
 silently evaluate to `null`, reporting "no pages" when the truth is "not
 counted".
 
-Rather than validating the option away, the public input type does not have
-it. `IPaginationParams` carries `page` and `limit` only, so `countQueries`,
-`route` and `routingLabels` cannot be passed at all. No guard to maintain, no
+This is not hypothetical. The reference implementation downstream already
+builds it dishonestly — it does `result.meta.totalItems ?? 0`, so under
+`countQueries: false` it would report an empty result set for a populated
+table, silently. Nobody passes that option today, which is precisely what makes
+it a landmine rather than a bug: it is reachable, and the code that would
+mis-handle it already exists.
+
+Rather than validating the option away, the public input type does not have it.
+`IPaginationParams` carries `page` and `limit` only, so `countQueries`, `route`
+and `routingLabels` cannot be passed at all. No guard to maintain, no
 documentation to ignore.
 
 ### No custom adapter extension point
@@ -155,6 +178,12 @@ existing key. That extension is out of scope here.
 
 `page` reflects what was requested, not what is valid. The paginator does not
 clamp it and neither do we: silently clamping hides a caller's error.
+
+`limit` is clamped to at least `1`. Both fields of `IPaginationParams` are
+optional and public, so `limit: 0` is reachable, and `ceil(totalItems / 0)` is
+`Infinity` — a negative limit is worse. Unlike `page`, there is no honest
+result to report for a page size of zero, so the value is corrected rather than
+passed through.
 
 ### Examples
 
@@ -224,6 +253,11 @@ An unexported module-private function translates the paginator's meta into
 `IPagination`. It is the only place in the repository that names a
 `nestjs-typeorm-paginate` type.
 
+This package gains a declared dependency on `@feedma/nest-common`. It must be a
+peer entry in `package.json`, not only a `tsconfig.json` project reference — a
+project reference satisfies the compiler here and is invisible to npm, which is
+the defect `#122` fixed elsewhere.
+
 Both fields of `IPaginationParams` are optional. The existing
 `defaultPaginationOptions` (`{ page: 1, limit: 15 }`) continues to fill the
 gaps, and the existing `TODO` about making it configurable from outside is
@@ -239,7 +273,7 @@ abstracting the ORM.
 ### `nest-graphql`
 
 `Pagination` drops `totalMatches` and widens `firstPage` / `lastPage` to
-`number | null`, fixing defect 1 of #109. The current declarations are
+`number | null`, fixing defect 1 of `#109`. The current declarations are
 `number`, which `implements IPagination` cannot catch: narrowing an
 implementation to `number` is assignable to `number | null`, so the check only
 runs in the harmless direction. The bite is backwards from the contract — a
@@ -250,59 +284,101 @@ class.
 
 ## When not to use this contract
 
-A page contract is for a **listing the caller browses**. A range contract is
-for a **sequence the caller addresses**. If the client's natural question is
-"give me the next screenful", pages fit. If it is "give me 20 items starting at
-index 4,193, because that is where the user was", pages are a lossy encoding of
-a coordinate the client already holds.
+A page contract is for a **listing the caller browses**. A range or cursor
+contract is for a **sequence the caller addresses**, or for a **collection that
+changes underneath the reader**. Three smells indicate this contract is being
+forced.
 
-Two smells indicate the contract is being forced:
+**1. The client computes `floor(position / limit)` to construct a request.**
+It is translating a coordinate it already holds into a page number it does not
+want. Pages are a lossy encoding of that coordinate: "give me 20 items starting
+at index 4,193, because that is where the user was" is not a browsing question.
 
-1. The client computes `floor(position / limit)` to construct a request. It is
-   translating a coordinate it already has into a page number it does not want.
-2. The word "page" already means something else in that domain. Publishing a
-   second, unrelated meaning of "page" in the same payload is a naming
-   collision in the one place it does damage.
+**2. The word "page" already means something else in that domain.** Publishing
+a second, unrelated meaning of "page" in the same payload is a naming collision
+in the one place it does damage.
 
-Both are drawn from a real rejection downstream: a reader application declined
-this contract for paginated book content, where the client measures its own
-visual pages against the viewport, and where reads are windows around a
-position rather than sequential browsing. It also avoided a `COUNT` on the
-highest-frequency operation in the app, since a range read can carry a
-precomputed total.
+**3. The collection changes while a client is paging through it.** Offset
+pagination addresses a position in a result set, so a concurrent insert above
+the window shifts an item down and it is served twice; a delete skips one. No
+amount of correct page arithmetic prevents this, because the offset addresses a
+result set that no longer exists. If the list is written to by anyone other than
+the reader, or by the reader in a way that reorders it, a cursor is the correct
+contract.
+
+Smells 1 and 2 are the addressing argument; smell 3 is independent of it. A
+team can answer "my client browses sequentially, pages fit" correctly and still
+ship duplicates, because stability is a separate question that has to be asked
+on its own.
+
+The first two are drawn from a real rejection downstream: a reader application
+declined this contract for paginated book content, where the client measures its
+own visual pages against the viewport, and where reads are windows around a
+position rather than sequential browsing (`ADR-0001` in the
+`ebook-reader-workspace`). It also avoided a `COUNT` on the highest-frequency
+operation in the app, since a range read can carry a precomputed total. The
+third is the case that application expects to hit next, on a discovery feed and
+on search over a shared catalogue, where offset pagination would be a
+correctness bug rather than a matter of taste.
 
 Recording this is the point. Without a stated boundary, the first team with a
 sequence will reach for the only pagination contract the organisation offers.
 
-## Breaking change
+## Consequences
 
 `BaseRepository.paginate` changes both its parameter and return types.
 Consumers on `@feedma/nest-typeorm@0.0.3` read `result.items` and
 `result.meta`; they will read `result.items` and `result.pagination`, and pass
 `{ page, limit }` rather than the paginator's options object.
 
-The packages are `0.0.x` and the one known consumer is already coordinating on
-this work. The change ships as a normal release with the migration stated in
-the changelog and the issues.
-
 Removing `totalMatches` from `IPagination` is separately breaking for anyone
-populating it. The known consumer computes it in a local adapter that this work
-replaces.
+populating it, and removes a field from the GraphQL schema.
+
+The known consumer measured the cost: one `paginate` call site, one local
+adapter deleted, four test assertions, and one spec document to update. Its
+client does not parse pagination at all yet, so no released client behaviour
+depends on the removed field.
+
+The packages are `0.0.x` and that consumer is coordinating on this work, so the
+change ships as a normal release with the migration stated in the changelog and
+the issues.
+
+## Alternatives
+
+**Define `totalMatches` instead of removing it.** Rejected: no definition
+survived contact with the paginator. Treating `totalItems` as the unfiltered
+total to make room for it costs a second `COUNT` per request and inverts the
+mapping the origin used.
+
+**`firstPage` / `lastPage` as `1` / `0` on empty.** Rejected: describes a range
+running backwards, and lets a client render a pager for a page that does not
+exist.
+
+**Export the adapter, or accept a custom one.** Rejected: either form has to
+name the paginator's types in a public signature, which is the coupling being
+removed. Consumers reshape the returned object instead.
+
+**Validate `countQueries: false` and reject it.** Rejected in favour of an input
+type that cannot express it. A guard has to be maintained and can be bypassed by
+the next option the library adds; a narrower type cannot.
 
 ## Out of scope
 
 - Response metadata as a third envelope key.
-- A cursor or range contract. The boundary section says when one is needed; it
-  does not design it.
+- A cursor or range contract. The boundary section says when one is needed,
+  including the instability case that is its strongest justification; it does
+  not design one.
 - Replacing `nestjs-typeorm-paginate`. This design makes that possible later
   without touching consumers; it does not do it.
 
 ## Testing
 
-- Field derivation per table above, including the two nullable fields.
+- Field derivation per the table above, including the two nullable fields.
 - The three examples as cases: normal page, empty result set, page out of
   range. The third is the regression guard for emptiness keying off
   `totalItems` rather than `items.length`.
+- `limit: 0` and a negative limit, asserting the clamp rather than `Infinity`
+  or a negative page count.
 - Overload dispatch, unchanged in behaviour but easy to break: query builder
   mocks must be built with `Object.create(SelectQueryBuilder.prototype)`, since
   a plain object fails `instanceof` and silently takes the find-options branch,
@@ -310,4 +386,5 @@ replaces.
 - A compile-time assertion that `paginate` returns `IPage<Entity>` and not
   `IPage<unknown>`, in the style of the existing `Pagination<Entity>`
   assertion.
-- The existing optional-peer import guard covers the new code automatically.
+- The existing dependency guards cover the new `nest-typeorm` to `nest-common`
+  edge automatically.

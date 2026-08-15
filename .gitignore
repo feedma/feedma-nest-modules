@@ -3,6 +3,9 @@ dist/
 lib/
 node_modules/
 
+# agent tooling scratch: decisions worth keeping go in docs/{rfcs,specs,adrs}
+docs/superpowers/
+
 # lerna task-runner cache
 .nx/
 

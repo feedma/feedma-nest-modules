@@ -139,6 +139,37 @@ describe('BaseRepository', () => {
       });
     });
 
+    it('returns the contract shape for the query builder branch too', async () => {
+      const repository = buildRepository();
+      const entity = new TestEntity();
+      paginateMock.mockResolvedValue(buildResult([entity]));
+      const queryBuilder = Object.create(
+        SelectQueryBuilder.prototype,
+      ) as SelectQueryBuilder<TestEntity>;
+
+      const page = await repository.paginate(queryBuilder);
+
+      expect(page).toEqual({
+        items: [entity],
+        pagination: {
+          totalItems: 1,
+          itemsPerPage: 15,
+          totalPages: 1,
+          page: 1,
+          firstPage: 1,
+          lastPage: 1,
+        },
+      });
+    });
+
+    it('does not clamp page', async () => {
+      const repository = buildRepository();
+
+      await repository.paginate({ page: 0 });
+
+      expect(paginateMock).toHaveBeenCalledWith(repository, { page: 0, limit: 15 }, undefined);
+    });
+
     it('exposes the entity type in the returned page', async () => {
       const repository = buildRepository();
       const entity = new TestEntity();

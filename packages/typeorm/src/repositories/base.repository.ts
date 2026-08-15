@@ -8,7 +8,7 @@ import {
   SelectQueryBuilder,
   FindManyOptions,
 } from 'typeorm';
-import { IPaginationOptions, paginate } from 'nestjs-typeorm-paginate';
+import { paginate } from 'nestjs-typeorm-paginate';
 import { IPage, IPaginationParams } from '@feedma/nest-common';
 import { toPagination } from './pagination.adapter';
 
@@ -28,7 +28,7 @@ export const defaultPaginationOptions = {
  * `totalPages` would be `Infinity`. `page` is deliberately not clamped: silently
  * correcting it would hide a caller's error.
  */
-function toPaginateOptions(params?: IPaginationParams): IPaginationOptions {
+function toPaginateOptions(params?: IPaginationParams) {
   const page = params?.page ?? defaultPaginationOptions.page;
   const limit = params?.limit ?? defaultPaginationOptions.limit;
 
@@ -55,20 +55,14 @@ export class BaseRepository<Entity> extends Repository<Entity> {
     customOptions?: IPaginationParams | FindOptionsWhere<Entity> | FindManyOptions<Entity>,
   ): Promise<IPage<Entity>> {
     //TODO: make defaultPaginationOptions configurable form outside
-    if (target instanceof SelectQueryBuilder) {
-      const result = await paginate<Entity>(
-        target,
-        toPaginateOptions(customOptions as IPaginationParams),
-      );
-
-      return { items: result.items, pagination: toPagination(result.meta) };
-    }
-
-    const result = await paginate<Entity>(
-      this,
-      toPaginateOptions(target),
-      customOptions as FindOptionsWhere<Entity> | FindManyOptions<Entity>,
-    );
+    const result =
+      target instanceof SelectQueryBuilder
+        ? await paginate<Entity>(target, toPaginateOptions(customOptions as IPaginationParams))
+        : await paginate<Entity>(
+            this,
+            toPaginateOptions(target),
+            customOptions as FindOptionsWhere<Entity> | FindManyOptions<Entity>,
+          );
 
     return { items: result.items, pagination: toPagination(result.meta) };
   }

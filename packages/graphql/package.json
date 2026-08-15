@@ -45,10 +45,8 @@
     "nestjs-cls": "5.4.2",
     "reflect-metadata": "0.2.2"
   },
-  "dependencies": {
-    "@feedma/nest-common": "^0.0.12"
-  },
   "peerDependencies": {
+    "@feedma/nest-common": "*",
     "@nestjs/common": "11.x",
     "@nestjs/config": "4.x",
     "@nestjs/core": "11.x",

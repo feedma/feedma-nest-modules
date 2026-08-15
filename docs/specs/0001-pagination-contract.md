@@ -32,8 +32,8 @@ sides, so it cannot be replaced without breaking consumers.
 
 ### Where the seven fields came from
 
-The contract was ported from a personal boilerplate,
-`esalazarv/only-bros-api`. Its adapter maps four fields and nothing else:
+The contract was ported from an earlier boilerplate, whose adapter maps four
+fields and nothing else:
 
 ```ts
 export function typeormPaginationAdapter(meta: IPaginationMeta): Pagination {
@@ -312,14 +312,15 @@ ship duplicates, because stability is a separate question that has to be asked
 on its own.
 
 The first two are drawn from a real rejection downstream: a reader application
-declined this contract for paginated book content, where the client measures its
-own visual pages against the viewport, and where reads are windows around a
-position rather than sequential browsing (`ADR-0001` in the
-`ebook-reader-workspace`). It also avoided a `COUNT` on the highest-frequency
-operation in the app, since a range read can carry a precomputed total. The
-third is the case that application expects to hit next, on a discovery feed and
-on search over a shared catalogue, where offset pagination would be a
-correctness bug rather than a matter of taste.
+declined this contract for long-form content served as a densely indexed
+sequence, where the client computes its own visual pagination against the
+viewport, and where reads are windows around a saved position rather than
+sequential browsing. It also avoided a `COUNT` on the highest-frequency
+operation in that application, since a range read can carry a precomputed total.
+
+The third smell comes from the cases that same shape hits next: a discovery feed
+and search over a catalogue written to by someone other than the reader, where
+offset pagination is a correctness bug rather than a matter of taste.
 
 Recording this is the point. Without a stated boundary, the first team with a
 sequence will reach for the only pagination contract the organisation offers.
@@ -339,14 +340,47 @@ Consumers on `@feedma/nest-typeorm@0.0.3` read `result.items` and
 Removing `totalMatches` from `IPagination` is separately breaking for anyone
 populating it, and removes a field from the GraphQL schema.
 
-The known consumer measured the cost: one `paginate` call site, one local
-adapter deleted, four test assertions, and one spec document to update. Its
-client does not parse pagination at all yet, so no released client behaviour
-depends on the removed field.
+Two usage patterns were measured across the applications consuming these
+packages, rather than assumed.
 
-The packages are `0.0.x` and that consumer is coordinating on this work, so the
-change ships as a normal release with the migration stated in the changelog and
-the issues.
+**Result mapped locally before it leaves the service.** One call site, plus a
+hand-written adapter that this contract replaces, plus its tests. Cheap: the
+mapping was already isolated, and deleting it is most of the migration.
+
+**Result returned straight through as the service return type.** Three call
+sites. The input needs no change — they already pass exactly `{ page, limit }` —
+and none passes `route`, so `links` is always `{}` and its removal costs
+nothing. All three carry `as Pagination<Entity>`, the `#110` workaround, which
+the new return type makes unnecessary.
+
+This second pattern is where the real cost lands, and it is not internal:
+returning the paginated object directly means the **HTTP response shape**
+changes from `{ items, meta, links }` to `{ items, pagination }`. That is a
+public API change for whatever calls those services, not a refactor.
+
+Neither is exposed on our schedule. Both pin caret ranges over `0.0.x`
+prereleases — `^0.0.11-alpha.4`, `^0.0.2-alpha.4` — which semver treats as
+locked to that patch line: `^0.0.11-alpha.4` does not even reach `0.0.12`. They
+receive nothing until someone edits the range deliberately, which is also why
+neither has picked up the recent fixes.
+
+### Version
+
+This releases as `0.1.0`, not `1.0.0`.
+
+A `BREAKING CHANGE:` footer would make conventional-commits recommend a major
+bump and take all four packages to `1.0.0`. In `0.x` semver already permits
+anything to change, so a minor bump is the idiomatic way to signal a break
+before `1.0`. Declaring the API stable now would be premature: `IPagination`
+changed shape twice in a single release cycle, `#123` will likely change
+`useContextRequest`'s signature, and `RFC-0001` anticipates a cursor contract
+that may move the envelope again. Shipping `1.0.0` and needing `2.0.0` shortly
+after communicates worse than staying in `0.x`.
+
+The mechanical cost: the commit must be `feat:` **without** the
+`BREAKING CHANGE:` footer, since that footer is what triggers the major. The
+migration note goes in the commit body and the pull request, so the changelog
+carries it as prose rather than under the standard breaking-change heading.
 
 ## Alternatives
 

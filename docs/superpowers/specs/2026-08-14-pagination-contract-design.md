@@ -1,0 +1,313 @@
+# Pagination contract design
+
+Status: approved, not yet implemented
+Date: 2026-08-14
+Issues: #109, and the adapter noted at the end of #110
+
+## Problem
+
+`IPagination` in `nest-common` declares seven fields. Three of them —
+`totalMatches`, `firstPage` and `lastPage` — have no producer: the meta
+`nestjs-typeorm-paginate` returns carries only `itemCount`, `totalItems`,
+`itemsPerPage`, `totalPages` and `currentPage`. Every consuming application
+therefore computes those three by hand and independently decides what they
+mean. Two consumers will disagree and the interface will not stop them.
+
+Separately, `BaseRepository.paginate` returns the paginator's own
+`Pagination<Entity>` (`items` / `meta` / `links`) and accepts the paginator's
+own `IPaginationOptions`. The library is part of our public surface on both
+sides, so it cannot be replaced without breaking consumers.
+
+### Where the seven fields came from
+
+The contract was ported from a personal boilerplate,
+`esalazarv/only-bros-api`. Its adapter maps four fields and nothing else:
+
+```ts
+export function typeormPaginationAdapter(meta: IPaginationMeta): Pagination {
+  return new Pagination({
+    page: meta.currentPage,
+    itemsPerPage: meta.itemsPerPage,
+    totalItems: meta.totalItems,
+    totalPages: meta.totalPages,
+  });
+}
+```
+
+Its `Pagination` entity declares exactly those four. `totalMatches`,
+`firstPage` and `lastPage` were added to `IPagination` later, in this
+repository, without an implementation and without a definition. That is why no
+paginator produces them and why nobody could articulate what `totalMatches`
+meant: it never had a meaning.
+
+## Decisions
+
+### `totalMatches` is removed
+
+It was indistinguishable from `totalItems`. Under the origin contract
+`totalItems` is the paginator's count — rows matching the query with filters
+applied — which is the same number `totalMatches` would carry. A field whose
+distinction nobody can state does not have one.
+
+Removing it also dissolves a defaulting question that had no good answer.
+`totalMatches ?? totalItems` fails in the direction that hides bugs: a filter
+returning nothing looks identical to a filter that was never applied.
+
+### `totalItems` is the filtered count
+
+Rows matching the query, with filters applied. This is what the paginator
+produces and what the origin contract meant.
+
+The alternative — `totalItems` as the unfiltered collection total — was
+considered and rejected. It requires a second `COUNT` per request over the
+whole table, it is often meaningless for scoped resources, and no caller has
+asked for it.
+
+### `firstPage` / `lastPage` are `number | null`
+
+`null` when the result set is empty. `1` / `0` is internally contradictory:
+`lastPage: 0` alongside `firstPage: 1` describes a range that runs backwards.
+`null` states the truth — there is nothing to navigate to — and forces clients
+to handle the empty case rather than rendering a pager for one nonexistent
+page.
+
+### Emptiness is a property of the result set, not of the page
+
+The rule keys off `totalItems`, never `items.length`:
+
+> `null` means "the result set is empty", not "this page is empty".
+
+A caller requesting page 99 of a four-page result gets `items: []` but keeps
+`firstPage: 1` and `lastPage: 4`. That is the only information that lets it
+recover, and making the nulls depend on `items.length` would remove it exactly
+when it is needed.
+
+### The library is internal on both sides
+
+`nestjs-typeorm-paginate` must not appear in any public signature of any
+package. Input becomes `IPaginationParams`, output becomes `IPage<Entity>`,
+both owned by `nest-common`. Replacing the paginator then becomes an internal
+change to `nest-typeorm`.
+
+### `countQueries: false` is inexpressible rather than forbidden
+
+The paginator accepts `countQueries: false`, which leaves `totalItems`,
+`itemCount`, `itemsPerPage` and `totalPages` **undefined**. The contract cannot
+be built honestly from that: `firstPage: totalItems > 0 ? 1 : null` would
+silently evaluate to `null`, reporting "no pages" when the truth is "not
+counted".
+
+Rather than validating the option away, the public input type does not have
+it. `IPaginationParams` carries `page` and `limit` only, so `countQueries`,
+`route` and `routingLabels` cannot be passed at all. No guard to maintain, no
+documentation to ignore.
+
+### No custom adapter extension point
+
+Consumers wanting different field names or extra data transform the returned
+object:
+
+```ts
+const page = await this.repository.paginate(queryBuilder, params);
+return { ...page, pagination: { ...page.pagination, appliedFilters } };
+```
+
+An extension point would have to name either the paginator's meta type — the
+coupling this design removes — or a mirror of it, which is the same accretion
+that produced the problem. Adding an optional transformer over the finished
+`IPage` later is a non-breaking addition, so starting without one closes
+nothing.
+
+The paginator's own `metaTransformer` is not exposed for the same reason.
+
+## The contract
+
+```ts
+export interface IPagination {
+  totalItems: number;
+  itemsPerPage: number;
+  totalPages: number;
+  page: number;
+  firstPage: number | null;
+  lastPage: number | null;
+}
+
+export interface IPage<TData> {
+  items: TData[];
+  pagination: IPagination;
+}
+```
+
+The `items` / `pagination` envelope is kept deliberately. It leaves room for
+sibling keys — Laravel-style response metadata — without disturbing either
+existing key. That extension is out of scope here.
+
+### Field derivation
+
+| Field | Source |
+| --- | --- |
+| `totalItems` | `meta.totalItems` |
+| `itemsPerPage` | `meta.itemsPerPage` |
+| `totalPages` | `meta.totalPages`, which is `ceil(totalItems / limit)` |
+| `page` | `meta.currentPage` |
+| `firstPage` | `totalItems > 0 ? 1 : null` |
+| `lastPage` | `totalItems > 0 ? totalPages : null` |
+
+`page` reflects what was requested, not what is valid. The paginator does not
+clamp it and neither do we: silently clamping hides a caller's error.
+
+### Examples
+
+Page 2 of 47 matching rows, 15 per page:
+
+```json
+{
+  "items": ["... 15 entities ..."],
+  "pagination": {
+    "totalItems": 47,
+    "itemsPerPage": 15,
+    "totalPages": 4,
+    "page": 2,
+    "firstPage": 1,
+    "lastPage": 4
+  }
+}
+```
+
+Empty result set:
+
+```json
+{
+  "items": [],
+  "pagination": {
+    "totalItems": 0,
+    "itemsPerPage": 15,
+    "totalPages": 0,
+    "page": 1,
+    "firstPage": null,
+    "lastPage": null
+  }
+}
+```
+
+Page out of range, same 47 rows:
+
+```json
+{
+  "items": [],
+  "pagination": {
+    "totalItems": 47,
+    "itemsPerPage": 15,
+    "totalPages": 4,
+    "page": 99,
+    "firstPage": 1,
+    "lastPage": 4
+  }
+}
+```
+
+## Components
+
+### `nest-common`
+
+Owns the contract and nothing else. `IPagination` loses `totalMatches` and
+keeps six fields. `IPage` and `IPaginationParams` are unchanged. No dependency
+on typeorm or any paginator.
+
+### `nest-typeorm`
+
+`BaseRepository.paginate` accepts `IPaginationParams` and returns
+`Promise<IPage<Entity>>`. Both overloads change; the branch dispatch on
+`target instanceof SelectQueryBuilder` is unchanged.
+
+An unexported module-private function translates the paginator's meta into
+`IPagination`. It is the only place in the repository that names a
+`nestjs-typeorm-paginate` type.
+
+Both fields of `IPaginationParams` are optional. The existing
+`defaultPaginationOptions` (`{ page: 1, limit: 15 }`) continues to fill the
+gaps, and the existing `TODO` about making it configurable from outside is
+neither resolved nor worsened here.
+
+Only the **paginator** is hidden. TypeORM's own types stay in the signature —
+`SelectQueryBuilder<Entity>` in the first overload, `FindOptionsWhere<Entity>`
+and `FindManyOptions<Entity>` in the second. TypeORM is a legitimate required
+peer of this package and a caller building a query builder already depends on
+it. The goal is replacing the paginator without breaking consumers, not
+abstracting the ORM.
+
+### `nest-graphql`
+
+`Pagination` drops `totalMatches` and widens `firstPage` / `lastPage` to
+`number | null`, fixing defect 1 of #109. The current declarations are
+`number`, which `implements IPagination` cannot catch: narrowing an
+implementation to `number` is assignable to `number | null`, so the check only
+runs in the harmless direction. The bite is backwards from the contract — a
+caller assigning the `null` the interface permits gets a type error against the
+class.
+
+`PaginatedResult<T>` is unchanged.
+
+## When not to use this contract
+
+A page contract is for a **listing the caller browses**. A range contract is
+for a **sequence the caller addresses**. If the client's natural question is
+"give me the next screenful", pages fit. If it is "give me 20 items starting at
+index 4,193, because that is where the user was", pages are a lossy encoding of
+a coordinate the client already holds.
+
+Two smells indicate the contract is being forced:
+
+1. The client computes `floor(position / limit)` to construct a request. It is
+   translating a coordinate it already has into a page number it does not want.
+2. The word "page" already means something else in that domain. Publishing a
+   second, unrelated meaning of "page" in the same payload is a naming
+   collision in the one place it does damage.
+
+Both are drawn from a real rejection downstream: a reader application declined
+this contract for paginated book content, where the client measures its own
+visual pages against the viewport, and where reads are windows around a
+position rather than sequential browsing. It also avoided a `COUNT` on the
+highest-frequency operation in the app, since a range read can carry a
+precomputed total.
+
+Recording this is the point. Without a stated boundary, the first team with a
+sequence will reach for the only pagination contract the organisation offers.
+
+## Breaking change
+
+`BaseRepository.paginate` changes both its parameter and return types.
+Consumers on `@feedma/nest-typeorm@0.0.3` read `result.items` and
+`result.meta`; they will read `result.items` and `result.pagination`, and pass
+`{ page, limit }` rather than the paginator's options object.
+
+The packages are `0.0.x` and the one known consumer is already coordinating on
+this work. The change ships as a normal release with the migration stated in
+the changelog and the issues.
+
+Removing `totalMatches` from `IPagination` is separately breaking for anyone
+populating it. The known consumer computes it in a local adapter that this work
+replaces.
+
+## Out of scope
+
+- Response metadata as a third envelope key.
+- A cursor or range contract. The boundary section says when one is needed; it
+  does not design it.
+- Replacing `nestjs-typeorm-paginate`. This design makes that possible later
+  without touching consumers; it does not do it.
+
+## Testing
+
+- Field derivation per table above, including the two nullable fields.
+- The three examples as cases: normal page, empty result set, page out of
+  range. The third is the regression guard for emptiness keying off
+  `totalItems` rather than `items.length`.
+- Overload dispatch, unchanged in behaviour but easy to break: query builder
+  mocks must be built with `Object.create(SelectQueryBuilder.prototype)`, since
+  a plain object fails `instanceof` and silently takes the find-options branch,
+  paginating the whole table while the test still passes.
+- A compile-time assertion that `paginate` returns `IPage<Entity>` and not
+  `IPage<unknown>`, in the style of the existing `Pagination<Entity>`
+  assertion.
+- The existing optional-peer import guard covers the new code automatically.

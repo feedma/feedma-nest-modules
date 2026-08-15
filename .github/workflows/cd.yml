@@ -99,6 +99,7 @@ jobs:
     permissions:
       contents: write
       packages: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -125,6 +126,40 @@ jobs:
         run: npm run publish:stable
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # `lerna version` commits the graduated versions and changelogs onto main,
+      # and develop never receives them. Left alone, develop keeps cutting betas
+      # from a stale base, so every prerelease sorts BELOW the stable it came
+      # from, release tags stop being reachable from working branches, and the
+      # next graduation merge conflicts. Opening the back-merge here is the step
+      # git-flow prescribes after a release and that this pipeline was missing.
+      - name: Open the back-merge into develop
+        if: always()
+        run: |
+          git fetch origin develop
+          if [ "$(git rev-list --count origin/develop..origin/main)" -eq 0 ]; then
+            echo "develop already contains every commit on main, nothing to sync."
+            exit 0
+          fi
+          if [ "$(gh pr list --base develop --head main --state open --json number --jq 'length')" -ne 0 ]; then
+            echo "A main -> develop pull request is already open."
+            exit 0
+          fi
+          cat > "${RUNNER_TEMP}/sync-body.md" <<'BODY'
+          Opened automatically by `publish_stable`.
+
+          `lerna version` committed the graduated versions and changelogs onto `main`. Until they
+          reach `develop`, prereleases are cut from a stale base and sort below the stable they came
+          from, release tags are unreachable from working branches, and the next graduation merge
+          conflicts.
+
+          Merging this fires `publish_beta`, which cuts betas above the new stable. Nothing is
+          republished.
+          BODY
+          gh pr create --base develop --head main \
+            --title 'chore: sync main back into develop after the stable release' \
+            --body-file "${RUNNER_TEMP}/sync-body.md"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Manual recovery. Publishes any package whose version is already committed
   # and tagged but never reached the registry, without versioning anything.

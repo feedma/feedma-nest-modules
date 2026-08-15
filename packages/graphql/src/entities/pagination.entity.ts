@@ -8,19 +8,16 @@ export class Pagination implements IPagination {
   totalItems: number;
 
   @Field()
-  totalMatches: number;
-
-  @Field()
   itemsPerPage: number;
 
   @Field()
   totalPages: number;
 
   @Field({ nullable: true })
-  firstPage: number;
+  firstPage: number | null;
 
   @Field({ nullable: true })
-  lastPage: number;
+  lastPage: number | null;
 
   @Field()
   page: number;

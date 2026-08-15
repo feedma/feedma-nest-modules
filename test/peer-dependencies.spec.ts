@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
+import { satisfies } from 'semver';
 
 const PACKAGES_ROOT = join(__dirname, '..', 'packages');
 
@@ -16,6 +17,7 @@ const INTERNAL_SCOPE = '@feedma/';
 
 interface IPackageManifest {
   name: string;
+  version: string;
   dependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
   peerDependenciesMeta?: Record<string, { optional?: boolean }>;
@@ -34,6 +36,7 @@ function isNonPeer(peer: string): boolean {
 
 describe('peer dependencies', () => {
   const manifests = readManifests();
+  const siblingVersions = new Map(manifests.map((manifest) => [manifest.name, manifest.version]));
 
   it('finds every package manifest', () => {
     expect(manifests.length).toBeGreaterThan(0);
@@ -64,20 +67,32 @@ describe('peer dependencies', () => {
   );
 
   it.each(manifests.map((manifest) => [manifest.name, manifest] as const))(
-    '%s pins every sibling peer to *',
+    '%s declares a sibling peer range that admits the version it ships beside',
     (_name, manifest) => {
-      // Any bounded range breaks on the beta channel. Semver only lets a
-      // prerelease satisfy a range when a comparator shares its exact
-      // major.minor.patch and carries a prerelease, so a range admits one
-      // version's prereleases and rejects the next version's. npm treats `*` as
-      // any version, prereleases included — measured, since semver.satisfies
-      // disagrees.
-      const bounded = Object.entries(manifest.peerDependencies ?? {})
+      // The invariant, not the workaround. `*` satisfies it today because lerna
+      // does not rewrite sibling peer ranges when it bumps: a bounded range goes
+      // stale on the next sibling release and the version step aborts. But a
+      // bounded range that does admit the current version is equally valid, so
+      // the rule does not have to be revisited if that ever changes — and unlike
+      // `*` it would also catch a major skew.
+      //
+      // `*` is exempted because npm accepts it for prereleases while
+      // semver.satisfies does not. Measured against npm; the spec disagrees.
+      //
+      // This catches a range that has already gone stale, not one that is about
+      // to: the check runs against the version in the tree, and the bump that
+      // invalidates a bounded range happens after it. Only `*` survives a bump
+      // unattended.
+      const stale = Object.entries(manifest.peerDependencies ?? {})
         .filter(([name]) => name.startsWith(INTERNAL_SCOPE))
-        .filter(([, range]) => range !== '*')
-        .map(([name, range]) => `${name}@${range}`);
+        .filter(([name, range]) => {
+          const shipped = siblingVersions.get(name);
 
-      expect(bounded).toEqual([]);
+          return shipped !== undefined && range !== '*' && !satisfies(shipped, range);
+        })
+        .map(([name, range]) => `${name}@${range} does not admit ${siblingVersions.get(name)}`);
+
+      expect(stale).toEqual([]);
     },
   );
 

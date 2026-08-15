@@ -1,5 +1,5 @@
 import { Type } from '@nestjs/common';
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Float, ObjectType } from '@nestjs/graphql';
 import { IPage, IPagination } from '@feedma/nest-common';
 
 @ObjectType()
@@ -13,10 +13,10 @@ export class Pagination implements IPagination {
   @Field()
   totalPages: number;
 
-  @Field({ nullable: true })
+  @Field(() => Float, { nullable: true })
   firstPage: number | null;
 
-  @Field({ nullable: true })
+  @Field(() => Float, { nullable: true })
   lastPage: number | null;
 
   @Field()

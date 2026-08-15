@@ -21,6 +21,10 @@ describe('Pagination', () => {
     // property to `number` is assignable to `number | null`, so the check only
     // runs in the harmless direction. The bite is backwards from the contract —
     // a caller assigning the null the interface allows gets a type error.
+    // That bite only fires under `strictNullChecks`. This repository's root
+    // `tsconfig.json` sets `strictNullChecks: false`, so the class does not
+    // catch the assignment here either; the protection applies to a consumer
+    // compiling with `strictNullChecks` on.
     const pagination: IPagination = new Pagination({
       totalItems: 0,
       itemsPerPage: 15,

@@ -150,9 +150,9 @@ export interface IPagination {
   totalItems: number;
   itemsPerPage: number;
   totalPages: number;
-  page: number;
   firstPage: number | null;
   lastPage: number | null;
+  page: number;
 }
 
 export interface IPage<TData> {
@@ -279,6 +279,13 @@ implementation to `number` is assignable to `number | null`, so the check only
 runs in the harmless direction. The bite is backwards from the contract — a
 caller assigning the `null` the interface permits gets a type error against the
 class.
+
+This bite requires `strictNullChecks` to be enabled at the call site. This
+repository's root `tsconfig.json` sets `strict: true` and then overrides
+`strictNullChecks: false`, so `null` is assignable to a plain `number` here:
+the repository's own typecheck does not enforce it, and does not exercise this
+protection. It applies to a consumer compiling with `strictNullChecks` on,
+which is the default `strict: true` gives elsewhere.
 
 `PaginatedResult<T>` is unchanged.
 

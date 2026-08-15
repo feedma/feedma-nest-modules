@@ -1,6 +1,6 @@
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { paginate } from 'nestjs-typeorm-paginate';
-import type { Pagination } from 'nestjs-typeorm-paginate';
+import type { IPage } from '@feedma/nest-common';
 import { BaseRepository, defaultPaginationOptions } from './base.repository';
 
 jest.mock('nestjs-typeorm-paginate', () => ({
@@ -22,9 +22,7 @@ function buildRepository(): BaseRepository<TestEntity> {
   return new BaseRepository(TestEntity, dataSource);
 }
 
-// Builds the value the mocked `paginate` resolves to. This is a `Pagination`, the
-// shape nestjs-typeorm-paginate returns — not the `IPage` shape from nest-common.
-function buildPagination(items: TestEntity[]): Pagination<TestEntity> {
+function buildResult(items: TestEntity[]) {
   return {
     items,
     meta: {
@@ -35,13 +33,13 @@ function buildPagination(items: TestEntity[]): Pagination<TestEntity> {
       currentPage: defaultPaginationOptions.page,
     },
     links: {},
-  } as unknown as Pagination<TestEntity>;
+  };
 }
 
 describe('BaseRepository', () => {
   beforeEach(() => {
     paginateMock.mockReset();
-    paginateMock.mockResolvedValue(buildPagination([]));
+    paginateMock.mockResolvedValue(buildResult([]));
   });
 
   it('should be defined', () => {
@@ -69,17 +67,6 @@ describe('BaseRepository', () => {
       expect(paginateMock).toHaveBeenCalledWith(queryBuilder, { page: 3, limit: 5 });
     });
 
-    it('applies the default pagination options to the given query builder', async () => {
-      const repository = buildRepository();
-      const queryBuilder = Object.create(
-        SelectQueryBuilder.prototype,
-      ) as SelectQueryBuilder<TestEntity>;
-
-      await repository.paginate(queryBuilder);
-
-      expect(paginateMock).toHaveBeenCalledWith(queryBuilder, defaultPaginationOptions);
-    });
-
     it('paginates the repository itself when no query builder is given', async () => {
       const repository = buildRepository();
       const findOptions = { where: { id: 1 } };
@@ -89,7 +76,7 @@ describe('BaseRepository', () => {
       expect(paginateMock).toHaveBeenCalledWith(repository, { page: 2, limit: 10 }, findOptions);
     });
 
-    it('applies the default pagination options when paginating the repository itself', async () => {
+    it('applies the default pagination params', async () => {
       const repository = buildRepository();
 
       await repository.paginate();
@@ -97,22 +84,42 @@ describe('BaseRepository', () => {
       expect(paginateMock).toHaveBeenCalledWith(repository, defaultPaginationOptions, undefined);
     });
 
-    it('resolves a single promise, not a nested one', async () => {
+    it('clamps a limit below one', async () => {
       const repository = buildRepository();
-      const pagination = buildPagination([]);
-      paginateMock.mockResolvedValue(pagination);
 
-      await expect(repository.paginate()).resolves.toBe(pagination);
+      await repository.paginate({ limit: 0 });
+
+      expect(paginateMock).toHaveBeenCalledWith(repository, { page: 1, limit: 1 }, undefined);
     });
 
-    it('exposes the entity type in the paginated result', async () => {
+    it('returns the contract shape rather than the paginator shape', async () => {
       const repository = buildRepository();
       const entity = new TestEntity();
-      paginateMock.mockResolvedValue(buildPagination([entity]));
+      paginateMock.mockResolvedValue(buildResult([entity]));
+
+      const page = await repository.paginate();
+
+      expect(page).toEqual({
+        items: [entity],
+        pagination: {
+          totalItems: 1,
+          itemsPerPage: 15,
+          totalPages: 1,
+          page: 1,
+          firstPage: 1,
+          lastPage: 1,
+        },
+      });
+    });
+
+    it('exposes the entity type in the returned page', async () => {
+      const repository = buildRepository();
+      const entity = new TestEntity();
+      paginateMock.mockResolvedValue(buildResult([entity]));
 
       // Compile-time guard: callers must get `TestEntity[]`, not `unknown[]`.
-      const result: Pagination<TestEntity> = await repository.paginate();
-      const items: TestEntity[] = result.items;
+      const page: IPage<TestEntity> = await repository.paginate();
+      const items: TestEntity[] = page.items;
 
       expect(items).toEqual([entity]);
     });

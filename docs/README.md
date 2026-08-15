@@ -8,6 +8,7 @@ Mirrors the doc system used across the organisation's other repositories, so a r
 
 | Path | Purpose |
 |------|---------|
+| [`../AGENTS.md`](../AGENTS.md) | Working rules: branching strategy, stacked PRs, release channels, dependency rules |
 | [`rfcs/`](./rfcs) | **RFCs** — proposals: the *what* and *why* |
 | [`specs/`](./specs) | **Specs** — implementation designs: the *how* |
 | [`adrs/`](./adrs) | **ADRs** — single architecture decisions, frozen once accepted |

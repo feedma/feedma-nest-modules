@@ -8,4 +8,4 @@ Start from [`_template.md`](./_template.md).
 
 | ID | Title | Status | Scope |
 |----|-------|--------|-------|
-| [ADR-0001](./0001-branch-from-main.md) | Working branches are cut from main | accepted | repo |
+| _none yet_ | | | |

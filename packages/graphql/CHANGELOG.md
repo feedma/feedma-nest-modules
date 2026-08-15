@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.6](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-graphql%400.0.6-beta.0...%40feedma%2Fnest-graphql%400.0.6) (2026-08-15)
+
+**Note:** Version bump only for package @feedma/nest-graphql
+
 ## [0.0.6-beta.0](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-graphql%400.0.5-beta.3...%40feedma%2Fnest-graphql%400.0.6-beta.0) (2026-08-15)
 
 ### Bug Fixes

@@ -1,5 +1,7 @@
 import { ArgumentsHost, ExecutionContext } from '@nestjs/common';
-import { Request } from 'express';
+// Type-only: express is an optional peer, so consumers on another HTTP adapter
+// are not forced to install it. Nothing binds to it at runtime.
+import type { Request } from 'express';
 
 export async function useContextRequest<
   T extends Record<string, unknown> = Record<string, unknown>,

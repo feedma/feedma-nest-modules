@@ -44,6 +44,7 @@
     "typeorm": "^0.3.21"
   },
   "peerDependencies": {
+    "@feedma/nest-common": "*",
     "@nestjs/common": "11.x",
     "@nestjs/config": "4.x",
     "@nestjs/core": "11.x",

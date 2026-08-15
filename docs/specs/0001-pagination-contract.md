@@ -1,10 +1,10 @@
 ---
 id: SPEC-0001
 title: Pagination Contract
-status: proposed
+status: accepted
 scope: [common, typeorm, graphql]
 created: 2026-08-14
-updated: 2026-08-14
+updated: 2026-08-15
 authors: [esalazarv]
 related:
   rfcs: [RFC-0001]
@@ -150,9 +150,9 @@ export interface IPagination {
   totalItems: number;
   itemsPerPage: number;
   totalPages: number;
-  page: number;
   firstPage: number | null;
   lastPage: number | null;
+  page: number;
 }
 
 export interface IPage<TData> {
@@ -249,9 +249,10 @@ on typeorm or any paginator.
 `Promise<IPage<Entity>>`. Both overloads change; the branch dispatch on
 `target instanceof SelectQueryBuilder` is unchanged.
 
-An unexported module-private function translates the paginator's meta into
-`IPagination`. It is the only place in the repository that names a
-`nestjs-typeorm-paginate` type.
+An exported `toPagination` function, in its own module, translates the
+paginator's meta into `IPagination`. It is the only place in the package that
+names a `nestjs-typeorm-paginate` type, and it stays absent from the package
+index, so replacing the paginator remains an internal change.
 
 This package gains a declared dependency on `@feedma/nest-common`. It must be a
 peer entry in `package.json`, not only a `tsconfig.json` project reference — a
@@ -279,6 +280,13 @@ implementation to `number` is assignable to `number | null`, so the check only
 runs in the harmless direction. The bite is backwards from the contract — a
 caller assigning the `null` the interface permits gets a type error against the
 class.
+
+This bite requires `strictNullChecks` to be enabled at the call site. This
+repository's root `tsconfig.json` sets `strict: true` and then overrides
+`strictNullChecks: false`, so `null` is assignable to a plain `number` here:
+the repository's own typecheck does not enforce it, and does not exercise this
+protection. It applies to a consumer compiling with `strictNullChecks` on,
+which is the default `strict: true` gives elsewhere.
 
 `PaginatedResult<T>` is unchanged.
 

@@ -1,6 +1,5 @@
 export interface IPagination {
   totalItems: number;
-  totalMatches: number;
   itemsPerPage: number;
   totalPages: number;
   firstPage: number | null;

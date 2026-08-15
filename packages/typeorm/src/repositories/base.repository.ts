@@ -8,13 +8,32 @@ import {
   SelectQueryBuilder,
   FindManyOptions,
 } from 'typeorm';
-import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
+import { paginate } from 'nestjs-typeorm-paginate';
+import { IPage, IPaginationParams } from '@feedma/nest-common';
+import { toPagination } from './pagination.adapter';
 
 export type ID = number | string;
 export const defaultPaginationOptions = {
   limit: 15,
   page: 1,
 };
+
+/**
+ * `IPaginationParams` cannot express `countQueries`, `route` or `routingLabels`,
+ * which is deliberate: the first would leave the counts undefined and make the
+ * contract dishonest, and the other two only feed links the contract does not
+ * carry.
+ *
+ * `limit` is clamped because there is no honest result for a page size of zero —
+ * `totalPages` would be `Infinity`. `page` is deliberately not clamped: silently
+ * correcting it would hide a caller's error.
+ */
+function toPaginateOptions(params?: IPaginationParams) {
+  const page = params?.page ?? defaultPaginationOptions.page;
+  const limit = params?.limit ?? defaultPaginationOptions.limit;
+
+  return { page, limit: Math.max(1, limit) };
+}
 
 export class BaseRepository<Entity> extends Repository<Entity> {
   constructor(target: EntityTarget<Entity>, dataSource: DataSource) {
@@ -23,28 +42,29 @@ export class BaseRepository<Entity> extends Repository<Entity> {
 
   paginate(
     queryBuilder?: SelectQueryBuilder<Entity>,
-    paginationOptions?: IPaginationOptions,
-  ): Promise<Pagination<Entity>>;
+    params?: IPaginationParams,
+  ): Promise<IPage<Entity>>;
 
   paginate(
-    paginationOptions?: IPaginationOptions,
+    params?: IPaginationParams,
     findOptions?: FindOptionsWhere<Entity> | FindManyOptions<Entity>,
-  ): Promise<Pagination<Entity>>;
+  ): Promise<IPage<Entity>>;
 
   async paginate(
-    target?: SelectQueryBuilder<Entity> | IPaginationOptions,
-    customOptions?: IPaginationOptions | FindOptionsWhere<Entity> | FindManyOptions<Entity>,
-  ): Promise<Pagination<Entity>> {
+    target?: SelectQueryBuilder<Entity> | IPaginationParams,
+    customOptions?: IPaginationParams | FindOptionsWhere<Entity> | FindManyOptions<Entity>,
+  ): Promise<IPage<Entity>> {
     //TODO: make defaultPaginationOptions configurable form outside
-    if (target instanceof SelectQueryBuilder) {
-      return paginate(target, { ...defaultPaginationOptions, ...customOptions });
-    }
+    const result =
+      target instanceof SelectQueryBuilder
+        ? await paginate<Entity>(target, toPaginateOptions(customOptions as IPaginationParams))
+        : await paginate<Entity>(
+            this,
+            toPaginateOptions(target),
+            customOptions as FindOptionsWhere<Entity> | FindManyOptions<Entity>,
+          );
 
-    return paginate(
-      this,
-      { ...defaultPaginationOptions, ...target } as IPaginationOptions,
-      customOptions as FindOptionsWhere<Entity> | FindManyOptions<Entity>,
-    );
+    return { items: result.items, pagination: toPagination(result.meta) };
   }
 
   async findOneByIdOrFail(id: ID): Promise<Entity | null> {

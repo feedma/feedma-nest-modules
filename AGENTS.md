@@ -98,13 +98,15 @@ Three guards enforce what the manifests must say. They run in the normal suite:
 
 A dependency between two packages in this repository must be a declared peer in `package.json`, not only a `tsconfig.json` project reference. A project reference satisfies the compiler here and is invisible to npm.
 
-**A sibling package is a peer pinned to `*`, never a dependency and never a bounded range.** Both halves are enforced by the suite.
+**A sibling package is a peer, never a dependency, and its range is `*`.** The suite enforces that it is a peer, and that whatever range is declared admits the version it ships beside.
 
 A peer rather than a dependency, because a second copy breaks class identity, and class identity is load-bearing: `instanceof` on the shared exception type, and Nest injection tokens. A duplicate breaks exception handling and dependency injection **silently**.
 
-`*` rather than a bounded range, because any bounded range breaks on the beta channel. Semver only lets a prerelease satisfy a range when some comparator shares its exact `major.minor.patch` *and* carries a prerelease of its own, so a range admits one version's prereleases and rejects the next version's — which is exactly how `>=0.0.12-0 <1` broke the pipeline the first time a prerelease was cut. npm accepts `*` for prereleases even though `semver.satisfies` reports otherwise; this rule comes from measuring npm, not from reading the spec.
+`*` rather than a bounded range for a narrower reason than it first appears. Bounded ranges are fine for consumers — `^0.0.12-0` installs clean against a published prerelease; only a range with no prerelease comparator, like `^0.0.12`, fails. The problem is upstream of that: **lerna does not rewrite sibling peer ranges when it bumps**, so any bounded range goes stale on the next sibling release and the version step aborts. Reproduced directly: bumping `nest-common` to `0.0.14-beta.0` left the peer at `^0.0.13-0` and the release failed.
 
-The cost is that `*` carries no version signal, so nothing warns when mismatched versions are paired. Acceptable while these packages are published in lockstep from one repository, and the thing to revisit if they ever diverge.
+That is a property of the release tooling, not of the package contract, so the rule is written as "the range must admit what ships beside it" rather than "the range must be `*`". Today only `*` survives a bump unattended. If sibling peer ranges ever get rewritten — by a `version` lifecycle hook, or by different tooling — a bounded range becomes viable and the guard already allows it.
+
+The cost of `*` is that it carries no version signal: nothing warns at install time when incompatible versions are paired, so a mismatch surfaces at load instead. Acceptable while these packages are published in lockstep from one repository.
 
 ## Commits
 

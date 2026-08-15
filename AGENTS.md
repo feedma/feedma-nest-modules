@@ -98,9 +98,13 @@ Three guards enforce what the manifests must say. They run in the normal suite:
 
 A dependency between two packages in this repository must be a declared peer in `package.json`, not only a `tsconfig.json` project reference. A project reference satisfies the compiler here and is invisible to npm.
 
-**An internal package is a `dependency`, never a peer.** A peer range cannot work while this repository publishes a beta channel: semver only lets a prerelease satisfy a range when some comparator shares its exact `major.minor.patch` *and* carries a prerelease of its own, so any range admits the prereleases of one version and rejects those of the next. `0.x`, `*`, `>=0.0.12` and `>=0.0.0-0 <1.0.0-0` all reject `0.0.13-beta.0`; only the resolver's `includePrerelease` flag accepts it, and that cannot be written in a manifest. As a dependency, lerna maintains the range on every version bump.
+**A sibling package is a peer pinned to `*`, never a dependency and never a bounded range.** Both halves are enforced by the suite.
 
-This costs the protection a peer would give. `instanceof` checks and Nest injection tokens depend on class identity, so two copies of an internal package break exception handling and dependency injection silently. Inside this repository npm links the workspace package and no second copy appears; for a consumer it stays possible if their own range diverges, which is why the ranges are left to lerna rather than pinned by hand.
+A peer rather than a dependency, because a second copy breaks class identity, and class identity is load-bearing: `instanceof` on the shared exception type, and Nest injection tokens. A duplicate breaks exception handling and dependency injection **silently**.
+
+`*` rather than a bounded range, because any bounded range breaks on the beta channel. Semver only lets a prerelease satisfy a range when some comparator shares its exact `major.minor.patch` *and* carries a prerelease of its own, so a range admits one version's prereleases and rejects the next version's — which is exactly how `>=0.0.12-0 <1` broke the pipeline the first time a prerelease was cut. npm accepts `*` for prereleases even though `semver.satisfies` reports otherwise; this rule comes from measuring npm, not from reading the spec.
+
+The cost is that `*` carries no version signal, so nothing warns when mismatched versions are paired. Acceptable while these packages are published in lockstep from one repository, and the thing to revisit if they ever diverge.
 
 ## Commits
 

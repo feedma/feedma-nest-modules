@@ -11,9 +11,9 @@ Mirrors the doc system used in the `ebook-reader-workspace`, so a reader moving 
 | [`rfcs/`](./rfcs) | **RFCs** — proposals: the *what* and *why* |
 | [`specs/`](./specs) | **Specs** — implementation designs: the *how* |
 | [`adrs/`](./adrs) | **ADRs** — single architecture decisions, frozen once accepted |
-| [`archive/`](./archive) | Archived RFCs/specs/ADRs (no longer active) |
+| `archive/` | Archived RFCs/specs/ADRs (no longer active), under `archive/<type>/` |
 
-Directories are created when the first document of that type is written.
+Each directory carries a `_template.md`. Copy it, fill the frontmatter, and add a row to that directory's `README.md` index. `archive/` is created the first time something is archived.
 
 ## Document types
 

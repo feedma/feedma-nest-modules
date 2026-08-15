@@ -7,7 +7,7 @@ created: 2026-08-14
 updated: 2026-08-14
 authors: [esalazarv]
 related:
-  rfcs: []
+  rfcs: [RFC-0001]
   specs: []
   adrs: []
 ---
@@ -323,6 +323,11 @@ correctness bug rather than a matter of taste.
 
 Recording this is the point. Without a stated boundary, the first team with a
 sequence will reach for the only pagination contract the organisation offers.
+
+What lies beyond the boundary is analysed in `RFC-0001`, which argues that a
+cursor contract should be lifted from a working implementation rather than
+designed in the abstract — for the same reason `totalMatches` had to be removed
+from this one.
 
 ## Consequences
 

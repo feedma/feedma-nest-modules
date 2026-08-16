@@ -19,17 +19,20 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      # Both maintained LTS lines. These packages are consumed by applications
+      # that will straddle them, so a single-version matrix would leave whichever
+      # one it omits untested. See https://nodejs.org/en/about/releases/
+      fail-fast: false
       matrix:
-        node-version: [22.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version: [22.x, 24.x]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: jwalton/gh-find-current-pr@v1
         id: findPr
 
       - name: Installing dependiencies using Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
@@ -37,9 +40,13 @@ jobs:
 
       - run: npm run typecheck
 
+      # The coverage action posts a pull request comment, so it runs on one
+      # matrix entry only — otherwise every pull request gets a duplicate report.
+      # The other entry still runs the suite, through the same action.
       - name: Running tests with coverage
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
           skip-step: install
           annotations: failed-tests
           prnumber: ${{ steps.findPr.outputs.number }}
+          output: ${{ matrix.node-version == '22.x' && 'comment' || 'report-markdown' }}

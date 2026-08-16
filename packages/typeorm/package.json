@@ -10,6 +10,9 @@
   "author": "Eduardo Salazar <eduardo.develop@gmail.com>",
   "homepage": "https://github.com/feedma/feedma-nest-modules#readme",
   "license": "MIT",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "main": "lib/src/index.js",
   "types": "lib/src/index.d.ts",
   "directories": {

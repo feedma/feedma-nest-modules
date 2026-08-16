@@ -5,6 +5,9 @@
   "author": "esalazarv.develop@gmail.com",
   "private": true,
   "license": "MIT",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
     "build": "lerna run build",
     "format": "lerna run format",

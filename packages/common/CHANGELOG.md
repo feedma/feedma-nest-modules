@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-common%400.2.0...%40feedma%2Fnest-common%400.3.0) (2026-08-16)
+
+### Features
+
+- **common:** drop the uuid peer for the built-in randomUUID ([4743118](https://github.com/feedma/feedma-nest-modules/commit/4743118fdc86b9facdb1c54e7555b1f11b61fa5a)), closes [#134](https://github.com/feedma/feedma-nest-modules/issues/134) [#135](https://github.com/feedma/feedma-nest-modules/issues/135)
+
+### BREAKING CHANGES
+
+- **common:** removing a peer only relaxes what they must install.
+  Anyone needing v1, v5 or v7 still adds uuid themselves, they simply are
+  not forced to. An earlier draft of this message carried the conventional
+  `!` marker, which would have recommended a major and taken these 0.x
+  packages to 1.0.0 for a change that requires less of consumers, not more.
+
+  This also settles the range question left open in #135. Widening the peer
+  to admit uuid 14 fails, and did so silently at first: with the range
+  widened but 11 still in the tree the suite passed, because it never
+  resolved 14. Once 14 was actually installed, three suites failed — it
+  ships ESM and Jest's module registry cannot parse it. Removing the
+  dependency answers the question instead of negotiating it.
+
+  The declared-imports guard needed a fix to accept this: `builtinModules`
+  lists bare names, so `node:crypto` was reported as undeclared while
+  `crypto` would not have been. Confirmed it still catches a genuinely
+  undeclared package after the change.
+
 # [0.2.0](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-common%400.1.1...%40feedma%2Fnest-common%400.2.0) (2026-08-16)
 
 ### Features

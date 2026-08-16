@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.1.0](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-testing%400.0.14...%40feedma%2Fnest-testing%400.1.0) (2026-08-16)
+
+### Features
+
+- support nestjs-cls 6 alongside 5 ([9b0a541](https://github.com/feedma/feedma-nest-modules/commit/9b0a541207fa1b29db1d79ef0adf00c5bc9d4163))
+
 ## [0.0.14](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-testing%400.0.13...%40feedma%2Fnest-testing%400.0.14) (2026-08-16)
 
 **Note:** Version bump only for package @feedma/nest-testing

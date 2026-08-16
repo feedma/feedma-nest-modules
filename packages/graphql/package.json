@@ -45,7 +45,7 @@
     "graphql-scalars": "1.24.2",
     "graphql-upload-ts": "2.1.2",
     "graphql-ws": "6.0.4",
-    "nestjs-cls": "5.4.2",
+    "nestjs-cls": "6.2.1",
     "reflect-metadata": "0.2.2"
   },
   "peerDependencies": {
@@ -58,7 +58,7 @@
     "graphql-scalars": "1.x",
     "graphql-upload-ts": "2.x",
     "graphql-ws": "6.x",
-    "nestjs-cls": "5.x",
+    "nestjs-cls": "5.x || 6.x",
     "reflect-metadata": "^0.2.x"
   },
   "publishConfig": {

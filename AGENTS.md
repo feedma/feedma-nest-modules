@@ -12,48 +12,20 @@ They are general-purpose libraries. Documents and commit messages describe **usa
 
 ## Branching strategy
 
-- **Feature branches are cut from `main`.** Never from `develop` — a branch taken from `develop` inherits every other feature still under test there, and drags them along when it merges.
-- **A feature opens a draft PR to `main` on day one.** The branch is empty at that point and that is fine: the PR is the feature's permanent review surface, it shows the accumulated diff at any moment, and graduation becomes marking it ready rather than opening something new.
+- **Feature branches are cut from `main`.** Never from a shared integration branch — a branch taken from one inherits every other feature still under test there, and drags them along when it merges.
+- **A feature opens a draft PR to `main` on day one.** The branch is empty at that point and that is fine: the PR is the feature's permanent review surface, it shows the accumulated diff at any moment, and shipping becomes marking it ready rather than opening something new.
 - **Work inside a feature is organised as [stacked PRs](https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/creating-stacked-pull-requests), driven with `gh stack`.** A feature branch is the trunk for its own work; each reviewable piece is a branch on top of it, targeting the branch below rather than `main`. That keeps each PR small enough to review honestly without waiting for the whole feature.
-- **Only `main` is ever merged *into* a feature branch.** If another feature graduates while yours is alive, merge `main` down to stay current. Never merge `develop` into a feature branch — that is the same contamination as branching from `develop`, arriving through the back door.
-- **Exercising a feature in `develop` goes through a throwaway integration branch**, never the feature branch itself. See below.
-- **A feature graduates by marking its draft PR ready and merging to `main`.** `main` therefore holds only graduated features, and is always a state worth branching from.
-- **`develop` is disposable.** If it gets into a bad state, recreate it from `main` and re-merge whichever features are still in construction. Nothing is lost, because nothing lives only in `develop`.
-- **`develop` is refreshed when someone is about to integrate, not when `main` moves.** It is a test bed, not a mirror: `develop` sitting behind `main` with nothing under test is the expected steady state, not drift to correct. Refresh it from `main` at the point you need to exercise something, so the base is current for that run.
+- **Only `main` is ever merged *into* a feature branch.** If another feature ships while yours is alive, merge `main` down to stay current.
+- **A feature ships by marking its draft PR ready and merging to `main`.** `main` therefore holds only shipped work, and is always a state worth branching from.
+- **There is no long-lived integration branch.** Trying something before it ships is a prerelease, not a merge — see Release channels below. `main` is the only branch anything is cut from or merged into.
 
-### Testing a feature against `develop`
+### When a feature depends on one that has not shipped
 
-The feature branch has to stay clean enough to merge into `main` at any moment, so it can never absorb `develop`. Integration happens on a separate, disposable branch:
+Branch it on top of that feature's branch. Stacking on the one real dependency picks up only what is actually needed, and the stack unwinds naturally as each piece ships.
 
-```bash
-git checkout feat/thing
-git checkout -b integration/thing
-git merge origin/develop        # resolve conflicts HERE
-git push -u origin integration/thing
-gh pr create --base develop     # or push straight to develop
-```
+If the dependency is close to shipping, the cheaper move is usually to ship it first and then cut from `main` as normal.
 
-- **`integration/*` branches only ever move toward `develop`.** They never merge back into the feature branch and never into `main`. Delete them freely; they hold nothing that matters.
-- **Conflicts resolved here are thrown away.** That resolution lives on a branch nobody keeps, so when both features eventually reach `main` someone resolves the same conflict again, possibly differently. Turn on `git rerere` (`git config --global rerere.enabled true`) so git replays your resolution automatically. Better still, treat a conflict found in integration as a signal to fix it at the source, in one of the feature branches, where the fix is permanent.
-
-### Discarding a feature
-
-`main` is untouched by definition — the feature never landed there. Only `develop` needs cleaning, and the way to clean it is to **recreate it, not to revert**:
-
-```bash
-git checkout develop
-git reset --hard origin/main
-# re-merge the integration branches of whatever is still under test
-git push --force-with-lease origin develop
-```
-
-### When a feature depends on one that has not graduated
-
-Branch it on top of that feature's branch, not on `develop`. Branching from `develop` would pick up every unrelated feature in flight; stacking on the one real dependency picks up only what is actually needed, and the stack unwinds naturally as each piece graduates.
-
-If the dependency is close to graduating, the cheaper move is usually to graduate it first and then cut from `main` as normal.
-
-Plan work with dependencies so it can be released sequentially. "This needs unreleased work, so I will branch from `develop`" is not a solution — it is how unrelated features end up entangled.
+Plan work with dependencies so it can be released sequentially. "This needs unreleased work, so I will branch from somewhere else" is not a solution — it is how unrelated features end up entangled.
 
 ### Stacked PR mechanics
 
@@ -76,17 +48,21 @@ Use the exit code. Never grep the output for the word `CONFLICT` — a source fi
 
 Publishing is driven by `.github/workflows/cd.yml`. Versions are never edited by hand — lerna computes them from conventional commits and the release tags.
 
-| Trigger | Channel | dist-tag |
+**The channel is a flag, not a branch.**
+
+| How | Channel | dist-tag |
 | --- | --- | --- |
-| Push to `feat/**`, `fix/**`, `hotfix/**` | canary, `0.0.0-alpha.0.sha-<sha>` | `canary` |
-| PR merged into `develop` | beta | `beta` |
 | PR merged into `main` | stable | `latest` |
+| `workflow_dispatch` on any branch, `action: prerelease` | prerelease | whatever `channel` you pass — `next`, `beta`, `rc`, `test` |
+| `workflow_dispatch`, `action: missing` | recovery | unchanged |
 
-Canary neither commits nor tags, so working-branch builds leave no trace in git.
+Prereleases leave **no commit and no tag**. They are throwaway artefacts for someone to install and try; the release history should record only what reached `latest`.
 
-Version and publish are separate steps. Publishing uses `lerna publish from-package`, which uploads only what the registry is missing, so a failed publish is recovered by re-running the job. `workflow_dispatch` runs that publish alone, for a release that was versioned and tagged but never uploaded.
+Not every change needs one. Route by risk: a published-contract change, a removed or renamed API, or anything a consumer should exercise in their own application earns a prerelease. CI changes, documentation, a widened peer range and a fix with a test covering it go straight to `main`.
 
-A breaking change while the packages are `0.x` ships as a **minor** bump, which semver already permits. Use `feat:` without a `BREAKING CHANGE:` footer — that footer recommends a major and would take the packages to `1.0.0` — and put the migration in the commit body and the PR.
+Version and publish are separate steps for the stable path. Publishing uses `lerna publish from-package`, which uploads only what the registry is missing, so a failed publish is recovered by re-running the job or dispatching `action: missing`.
+
+A breaking change while the packages are `0.x` ships as a **minor** bump, which semver already permits. Use `feat:` without a `BREAKING CHANGE:` footer and without the `!` marker — either one recommends a major and would take the packages to `1.0.0` — and put the migration in the commit body and the PR.
 
 ## Dependencies
 

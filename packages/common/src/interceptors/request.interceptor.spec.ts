@@ -1,4 +1,3 @@
-import * as uuidModule from 'uuid';
 import { ClsModule, ClsService } from 'nestjs-cls';
 import { Test, TestingModule } from '@nestjs/testing';
 import { callHandlerMock, executionContextMock } from '@feedma/nest-testing';
@@ -8,7 +7,12 @@ import { IRequestContext } from '../interfaces/request-context.interface';
 import { useContextRequest } from '../helpers/use-context-request.helper';
 
 jest.mock('../helpers/use-context-request.helper');
-jest.mock('uuid', () => ({ v4: jest.fn(() => '5a470513-7316-493b-b0bc-ce13dc16f543') }));
+// Only randomUUID is replaced: the rest of node:crypto stays real, since other
+// code in the graph depends on it.
+jest.mock('node:crypto', () => ({
+  ...jest.requireActual('node:crypto'),
+  randomUUID: jest.fn(() => '5a470513-7316-493b-b0bc-ce13dc16f543'),
+}));
 
 describe('RequestInterceptor', () => {
   let interceptor: RequestInterceptor;

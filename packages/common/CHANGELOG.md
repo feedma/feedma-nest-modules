@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.1](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-common%400.1.0...%40feedma%2Fnest-common%400.1.1) (2026-08-16)
+
+**Note:** Version bump only for package @feedma/nest-common
+
 # [0.1.0](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-common%400.0.13...%40feedma%2Fnest-common%400.1.0) (2026-08-15)
 
 ### Features

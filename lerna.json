@@ -1,7 +1,9 @@
 {
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
   "version": "independent",
-  "packages": ["packages/*"],
+  "packages": [
+    "packages/*"
+  ],
   "command": {
     "publish": {
       "registry": "https://registry.npmjs.org"
@@ -9,7 +11,9 @@
     "version": {
       "createRelease": "github",
       "conventionalCommits": true,
-      "allowBranch": ["main", "develop"],
+      "allowBranch": [
+        "main"
+      ],
       "message": "chore(release): publish"
     }
   }

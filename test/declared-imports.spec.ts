@@ -40,9 +40,13 @@ function collectPublishedSources(directory: string): string[] {
  * counts as depending on `@nestjs/graphql`.
  */
 function toPackageName(specifier: string): string {
-  const segments = specifier.split('/');
+  // `builtinModules` lists bare names, so the `node:` prefix has to come off
+  // before a builtin can be recognised — `node:crypto` is not in the list,
+  // `crypto` is.
+  const bare = specifier.replace(/^node:/, '');
+  const segments = bare.split('/');
 
-  return specifier.startsWith('@') ? segments.slice(0, 2).join('/') : segments[0];
+  return bare.startsWith('@') ? segments.slice(0, 2).join('/') : segments[0];
 }
 
 function collectImports(source: string): string[] {

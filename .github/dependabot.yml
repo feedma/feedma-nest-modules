@@ -1,0 +1,52 @@
+version: 2
+
+# Without grouping, dependabot opens one pull request per dependency per
+# manifest — a framework bump shared by the root and three packages arrives as
+# four. Each merge to main also publishes a release, so an ungrouped batch
+# becomes a batch of releases for changes that never reach a consumer: the
+# published packages declare no runtime dependencies, and everything below is
+# development-only.
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    # One entry covers every workspace, so a dependency shared by the root and
+    # the packages is bumped in one pull request rather than one per manifest.
+    groups:
+      nest:
+        patterns:
+          - '@nestjs/*'
+          - 'nestjs-*'
+      typescript-toolchain:
+        patterns:
+          - 'typescript'
+          - 'ts-*'
+          - '@types/*'
+          - 'eslint*'
+          - '@typescript-eslint/*'
+          - 'prettier*'
+          - 'jest*'
+      # Everything else, so a lone transitive security fix still gets through
+      # instead of waiting on a group it does not belong to.
+      remaining:
+        patterns:
+          - '*'
+    commit-message:
+      # `chore` keeps these out of the changelog's feature and fix sections.
+      # They still trigger a patch release, which is correct: the manifests
+      # changed, even if only for development.
+      prefix: chore
+      include: scope
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns:
+          - '*'
+    commit-message:
+      prefix: ci

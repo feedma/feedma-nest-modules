@@ -39,10 +39,8 @@
     "@nestjs/platform-express": "^11.1.9",
     "graphql-ws": "^6.0.6",
     "nest-winston": "^1.10.2",
-    "nestjs-cls": "^5.4.3",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2",
-    "uuid": "^11.1.0"
+    "rxjs": "^7.8.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
@@ -68,6 +66,7 @@
     "jest-extended": "^4.0.2",
     "lerna": "10.0.0",
     "lint-staged": "^15.5.2",
+    "nestjs-cls": "^6.2.1",
     "prettier": "^3.7.4",
     "rimraf": "^6.1.2",
     "semver": "7.8.4",
@@ -77,7 +76,8 @@
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "uuid": "^11.1.0"
   },
   "config": {
     "commitizen": {

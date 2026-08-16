@@ -43,7 +43,7 @@
     "@nestjs/graphql": "13.0.4",
     "express": "5.1.0",
     "nest-winston": "1.10.2",
-    "nestjs-cls": "5.4.2",
+    "nestjs-cls": "6.2.1",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
     "uuid": "11.1.0"
@@ -55,7 +55,7 @@
     "@nestjs/graphql": "13.x",
     "express": "5.x",
     "nest-winston": "1.x",
-    "nestjs-cls": "5.x",
+    "nestjs-cls": "5.x || 6.x",
     "reflect-metadata": "^0.2.x",
     "rxjs": "7.x",
     "uuid": "11.x"

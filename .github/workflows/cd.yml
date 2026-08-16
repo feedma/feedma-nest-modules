@@ -49,6 +49,16 @@ jobs:
   publish_stable:
     if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     needs: test
+    concurrency:
+      # A publish takes minutes. A second merge inside that window advances
+      # main under this job's checkout, and lerna aborts with EBEHIND before
+      # publishing anything.
+      #
+      # Never cancel: a half-finished publish can leave a version tagged in git
+      # but absent from the registry, which then needs manual recovery.
+      # Queuing only costs time.
+      group: publish-${{ github.repository }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -92,6 +102,16 @@ jobs:
   publish_prerelease:
     if: github.event_name == 'workflow_dispatch' && inputs.action == 'prerelease'
     needs: test
+    concurrency:
+      # A publish takes minutes. A second merge inside that window advances
+      # main under this job's checkout, and lerna aborts with EBEHIND before
+      # publishing anything.
+      #
+      # Never cancel: a half-finished publish can leave a version tagged in git
+      # but absent from the registry, which then needs manual recovery.
+      # Queuing only costs time.
+      group: publish-${{ github.repository }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -126,6 +146,16 @@ jobs:
   publish_missing:
     if: github.event_name == 'workflow_dispatch' && inputs.action == 'missing'
     needs: test
+    concurrency:
+      # A publish takes minutes. A second merge inside that window advances
+      # main under this job's checkout, and lerna aborts with EBEHIND before
+      # publishing anything.
+      #
+      # Never cancel: a half-finished publish can leave a version tagged in git
+      # but absent from the registry, which then needs manual recovery.
+      # Queuing only costs time.
+      group: publish-${{ github.repository }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       contents: read

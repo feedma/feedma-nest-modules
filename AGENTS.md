@@ -62,6 +62,8 @@ Not every change needs one. Route by risk: a published-contract change, a remove
 
 Version and publish are separate steps for the stable path. Publishing uses `lerna publish from-package`, which uploads only what the registry is missing, so a failed publish is recovered by re-running the job or dispatching `action: missing`.
 
+**Publish jobs serialise.** A publish takes minutes, and a second merge inside that window advances `main` under the first job's checkout, aborting it with `EBEHIND` before anything ships — merging two pull requests back to back is enough. They share a concurrency group and never cancel in progress: a half-finished publish can leave a version tagged in git but absent from the registry, which then needs manual recovery.
+
 A breaking change while the packages are `0.x` ships as a **minor** bump, which semver already permits. Use `feat:` without a `BREAKING CHANGE:` footer and without the `!` marker — either one recommends a major and would take the packages to `1.0.0` — and put the migration in the commit body and the PR.
 
 ## Dependencies

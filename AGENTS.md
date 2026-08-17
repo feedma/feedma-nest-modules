@@ -108,11 +108,17 @@ This stops holding the moment a package reaches `1.0.0`, where a major is taken 
 
 ## Deprecating
 
-The usual policy — deprecate in one major, remove in the next — has nothing to attach to here. These packages are `0.x` and lerna downgrades a recommended major to a minor, so **no major boundary is ever cut**. Waiting for one means waiting forever. The anchor is the consumers instead: few enough to enumerate, and reachable.
+The usual policy — deprecate in one major, remove in the next — has nothing to attach to here. These packages are `0.x` and lerna downgrades a recommended major to a minor, so **no major boundary is ever cut**. Waiting for one means waiting forever.
 
-**Removal is allowed once no known consumer still uses it.** Check, do not assume. That is a stronger guarantee than any interval — an interval only measures how long nobody was asked.
+**Consumers cannot be enumerated.** These are public packages on npm, pulled between five hundred and a thousand times a week each. The applications in this organisation are a floor, never the whole set, and "no consumer we know of uses it" is not a statement about who is affected. Asking them is worth the minute it costs, but it is a courtesy, not the gate.
 
-Deprecation and removal are always **two separate releases**. Never the same one.
+**Removal ships in a minor, and that is what makes it safe.** While a package is `0.x`, a caret range pins the minor — `^0.3.2` admits `0.3.9` and refuses `0.4.0` — so a removal reaches nobody automatically. Every consumer crosses that boundary deliberately, having chosen to move, and that protection covers the ones we have never heard of exactly as well as the ones we have.
+
+Never remove in a patch. A patch is the one bump a caret range delivers without anyone deciding to take it.
+
+**This protection ends at `1.0.0`**, where `^1.3.2` does admit `1.4.0` and a minor is delivered automatically. From that point removal belongs in a major, and this section needs rewriting before the first package gets there.
+
+Deprecation and removal are always **two separate releases**. Never the same one — a consumer crossing the boundary must be able to find the warning in a version that still works.
 
 ### Deprecating an API
 

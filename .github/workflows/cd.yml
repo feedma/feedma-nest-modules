@@ -20,13 +20,12 @@ on:
           - missing
         default: prerelease
       channel:
-        description: 'npm dist-tag for the prerelease (next, beta, rc, test)'
-        type: string
-        default: next
-      preid:
-        description: 'Prerelease identifier used in the version'
-        type: string
-        default: next
+        description: 'canary while the work moves, next when it is ready to be judged'
+        type: choice
+        options:
+          - canary
+          - next
+        default: canary
 
 jobs:
   # Every publish job needs this one, so gating it here stops the whole
@@ -139,15 +138,20 @@ jobs:
         run: |
           npm ci
           npm run build
-      # Both dist-tag flags are set to the same value on purpose: `--dist-tag`
-      # covers the general case and `--pre-dist-tag` the prerelease one, so the
-      # artefact cannot land on `latest` through whichever lerna consults.
+      # Two scripts rather than one with a flag, because the channels compute
+      # their version differently and that difference is the point.
+      #
+      # `next` uses --conventional-prerelease, so its version is the one that
+      # graduates: validating 0.4.0-next.0 validates what ships as 0.4.0.
+      # Nothing is tagged, so it can only be cut once per stable baseline —
+      # a second one recomputes the same version and the registry rejects it.
+      #
+      # `canary` appends the commit sha, so it is unique per commit and can be
+      # cut as often as needed. Its version carries a fixed bump rather than
+      # the conventional one, so it does not match what will ship — an
+      # iteration build is for running the code, not for judging the release.
       - name: Publish prerelease
-        run: |
-          npm run publish:prerelease -- \
-            --preid "${{ inputs.preid }}" \
-            --dist-tag "${{ inputs.channel }}" \
-            --pre-dist-tag "${{ inputs.channel }}"
+        run: npm run publish:${{ inputs.channel }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

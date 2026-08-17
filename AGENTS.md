@@ -62,6 +62,10 @@ Not every change needs one. Route by risk: a published-contract change, a remove
 
 Version and publish are separate steps for the stable path. Publishing uses `lerna publish from-package`, which uploads only what the registry is missing, so a failed publish is recovered by re-running the job or dispatching `action: missing`.
 
+**The pipeline only ever adds to the registry.** It publishes versions and sets tags; it never deletes either. The publish credential is append-only by consequence, so a leaked token means an unwanted version — corrected by publishing over it — rather than a removal that breaks resolution for every consumer and leaves nothing behind to inspect.
+
+Retiring a dist-tag, unpublishing a version, or any other destructive registry operation is done by hand, deliberately, by someone with their own credentials. These are one-time acts and do not justify a standing capability. "The pipeline is the only thing holding registry credentials" is an argument for where the credentials live, never for what the pipeline should be allowed to do with them.
+
 **Publish jobs serialise.** A publish takes minutes, and a second merge inside that window advances `main` under the first job's checkout, aborting it with `EBEHIND` before anything ships — merging two pull requests back to back is enough. They share a concurrency group and never cancel in progress: a half-finished publish can leave a version tagged in git but absent from the registry, which then needs manual recovery.
 
 ### What produces a release

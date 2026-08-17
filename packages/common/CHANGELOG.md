@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-common%400.3.2...%40feedma%2Fnest-common%400.4.0) (2026-08-17)
+
+### Features
+
+- **common:** resolve the exception message on access, not in the constructor ([d90907b](https://github.com/feedma/feedma-nest-modules/commit/d90907b1707e3e7b9cd09b2c616c692de709134b))
+
 ## [0.3.2](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-common%400.3.1...%40feedma%2Fnest-common%400.3.2) (2026-08-17)
 
 ### Bug Fixes

@@ -74,6 +74,8 @@ Three guards enforce what the manifests must say. They run in the normal suite:
 - **No dev-only package may be a peer.** `@types/*` and test frameworks are never something a consumer must provide. Marking them optional is not enough — an optional peer edge still counts as a reference from a production dependency, so it survives `npm ci --omit=dev`.
 - **Shipped code must not bind eagerly to an optional peer.** `import type`, `export type` and dynamic `import()` are fine; value imports, side-effect imports, `require()` and subpath imports into a package's internals are not.
 
+**Framework packages move together.** `@nestjs/core`, `@nestjs/common`, `@nestjs/testing` and `@nestjs/platform-*` must install at the same version — bump them in one change, and in every manifest that pins them. A `^` range lets one of them float ahead of the others, and a mismatched pair fails as a dependency that silently arrives `undefined` or a module that hangs on `init`, never as a version error. The peer ranges stay wide; this rule is about what gets installed here.
+
 A dependency between two packages in this repository must be a declared peer in `package.json`, not only a `tsconfig.json` project reference. A project reference satisfies the compiler here and is invisible to npm.
 
 **A sibling package is a peer, never a dependency, and its range is `*`.** The suite enforces that it is a peer, and that whatever range is declared admits the version it ships beside.

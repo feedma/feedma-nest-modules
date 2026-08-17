@@ -85,6 +85,8 @@ If your change touches nothing under `packages/` the run succeeds and publishes 
 
 `action: missing` covers one case: a publish interrupted partway, leaving a version committed and tagged but absent from the registry. It uploads what is missing without versioning anything.
 
+**Publishing stays behind `workflow_dispatch` deliberately.** Triggering it from a pull request label would remove the command from the common path, but a label is a weaker authorisation signal than a dispatch: running a workflow needs write access to the repository, while managing labels needs only triage. On a public repository that lowers the bar for publishing to the registry, in exchange for saving one command. Any future automation has to answer that first.
+
 ### Graduating
 
 | Change | Gate | Time fallback |

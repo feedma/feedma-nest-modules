@@ -1,13 +1,22 @@
 import { ClsService } from 'nestjs-cls';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { INQUIRER } from '@nestjs/core';
 import { clsGetterMockFactory, mockAppStore } from '@feedma/nest-testing';
 import { LoggerService } from './logger.service';
 import { LOG_DATA_PROVIDER_TOKEN } from '../constants/logger.constants';
 import { logMetadataFactory } from '../helpers/log-metadata-factory.helper';
+
+// The logger names its caller by injecting INQUIRER, which nest resolves from
+// whichever class asked for the instance. That only happens through a real
+// injection, so the caller is a class here rather than a stubbed token: a
+// module-level override of INQUIRER is ignored for transient providers, and
+// silently leaves every instance naming itself.
+@Injectable()
+class TestController {
+  constructor(readonly logger: LoggerService) {}
+}
 
 describe('LoggerService', () => {
   let service: LoggerService;
@@ -16,6 +25,7 @@ describe('LoggerService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        TestController,
         LoggerService,
         ConfigService,
         {
@@ -36,10 +46,6 @@ describe('LoggerService', () => {
           },
         },
         {
-          provide: INQUIRER,
-          useValue: { constructor: { name: 'TestController' } },
-        },
-        {
           provide: LOG_DATA_PROVIDER_TOKEN,
           useFactory: (cls: ClsService) => () => logMetadataFactory(cls),
           inject: [ClsService],
@@ -47,8 +53,8 @@ describe('LoggerService', () => {
       ],
     }).compile();
 
-    service = await module.resolve<LoggerService>(LoggerService);
-    logger = await module.resolve<Logger>(WINSTON_MODULE_NEST_PROVIDER);
+    service = module.get(TestController).logger;
+    logger = module.get<Logger>(WINSTON_MODULE_NEST_PROVIDER);
   });
 
   it('should be defined', () => {

@@ -17,6 +17,8 @@ They are general-purpose libraries. Documents and commit messages describe **usa
 - **Work inside a feature is organised as [stacked PRs](https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/creating-stacked-pull-requests), driven with `gh stack`.** A feature branch is the trunk for its own work; each reviewable piece is a branch on top of it, targeting the branch below rather than `main`. That keeps each PR small enough to review honestly without waiting for the whole feature.
 - **Only `main` is ever merged *into* a feature branch.** If another feature ships while yours is alive, merge `main` down to stay current.
 - **A feature ships by marking its draft PR ready and merging to `main`.** `main` therefore holds only shipped work, and is always a state worth branching from.
+
+**Ready means validated.** A pull request stays a draft until its prerelease has been published and a consumer has confirmed it — see Release channels below. Leaving it ready beforehand is what makes an unvalidated change look mergeable, and the review state is the only thing that carries this: the branch it targets does not, since everything targets `main`.
 - **There is no long-lived integration branch.** Trying something before it ships is a prerelease, not a merge — see Release channels below. `main` is the only branch anything is cut from or merged into.
 
 ### When a feature depends on one that has not shipped

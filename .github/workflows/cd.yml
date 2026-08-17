@@ -200,6 +200,10 @@ jobs:
     concurrency:
       # Shares the publish group so a removal cannot land between a publish
       # setting a tag and the version it points at, and delete what was just set.
+      #
+      # Dispatch one tag at a time and wait. The group holds a single queued
+      # run, so a third dispatch arriving while one is queued replaces it, and
+      # the displaced run is cancelled without ever removing anything.
       group: publish-${{ github.repository }}
       cancel-in-progress: false
     runs-on: ubuntu-latest
@@ -219,10 +223,19 @@ jobs:
             echo "::error::latest cannot be removed"
             exit 1
           fi
+          # A tag that is already absent is the desired end state, so it is not
+          # an error — but every other failure is, and swallowing them made this
+          # job report success while removing nothing. `npm dist-tag ls` reads
+          # the registry without credentials, so absence is established before
+          # the write rather than inferred from its exit code.
           for manifest in packages/*/package.json; do
             name=$(node -p "require('./$manifest').name")
-            npm dist-tag rm "$name" "${{ inputs.channel }}" \
-              || echo "$name has no ${{ inputs.channel }} tag, nothing to remove"
+            if npm dist-tag ls "$name" | grep -q "^${{ inputs.channel }}:"; then
+              npm dist-tag rm "$name" "${{ inputs.channel }}"
+              echo "removed ${{ inputs.channel }} from $name"
+            else
+              echo "$name has no ${{ inputs.channel }} tag, nothing to remove"
+            fi
           done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -57,19 +57,13 @@ Publishing is driven by `.github/workflows/cd.yml`. Versions are never edited by
 | stable | `latest` | `0.4.0` | PR merged into `main` |
 | recovery | unchanged | unchanged | `workflow_dispatch`, `action: missing` |
 
-All three carry the **same base version**. A consumer validating `0.4.0-next.0` is validating the exact artefact that graduates to `0.4.0` — the prerelease is computed with `--conventional-prerelease` and the stable with `--conventional-graduate`, which is what makes them agree.
-
-Prereleases leave **no commit and no tag**. The release history records only what reached `latest`.
-
-### Nothing reaches `latest` unvalidated
-
-**Every change that produces a release is published as a prerelease first and validated by a consumer before it graduates.** No exception by size: a patch breaks a consumer exactly as effectively as a minor, and a change nobody has run is unvalidated regardless of how small its diff looks.
-
-This is deliberately stricter than large frameworks, which ship patches and minors straight to `latest` and reserve prereleases for majors. That works on their download volume: a broken patch is found within hours because thousands of installs exercise it. Here the audience that would notice is a handful of applications, mostly in this organisation — so the fault would surface late, and asking someone to install a `next` costs one message. When detection is weak and validation is cheap, validate.
+**Nothing reaches `latest` without having been published as a prerelease and validated by a consumer.** No exception by size — a patch breaks a consumer exactly as effectively as a minor, and the diff's size says nothing about the assumption it quietly relies on. The reasoning, and why this is stricter than large frameworks, is [ADR-0001](./docs/adrs/0001-release-channels-and-validation.md).
 
 The flow is `canary` while the work moves, `next` when it is ready to be judged, `latest` once someone says it works.
 
-**A `next` can only be cut once per stable baseline.** Nothing is tagged, so lerna recomputes the same version from the last release tag and a second publish collides with the registry. Iterate on `canary`, which carries the commit sha and is therefore unique per commit.
+`next` and the stable it graduates to are the **same base version**, so validating `0.4.0-next.0` validates what ships as `0.4.0`.
+
+**A `next` can only be cut once per stable baseline.** Nothing is tagged, so lerna recomputes the same version and the registry rejects the second. Iterate on `canary`, which carries the commit sha and is unique per commit.
 
 ### Graduating
 
@@ -82,74 +76,47 @@ The flow is `canary` while the work moves, `next` when it is ready to be judged,
 
 The fallback exists so work is not stranded when nobody answers, not as a way around validation. Graduating on the clock is a decision that nobody ran it — take it knowingly.
 
-A hotfix has no fallback for the reason it might seem to deserve one: it is the change made fastest, under the most pressure, and therefore the most likely to break something else. The consumer suffering the fault is also the one who can confirm the repair in short time, so the confirmation arrives without a clock.
-
 Changes that touch nothing under `packages/` publish nothing, so they have neither prerelease nor release. Documentation, workflow and repository configuration are outside this by construction, not by exemption.
+
+### Publishing mechanics
+
+Prereleases leave **no commit and no tag**. The release history records only what reached `latest`.
 
 Version and publish are separate steps for the stable path. Publishing uses `lerna publish from-package`, which uploads only what the registry is missing, so a failed publish is recovered by re-running the job or dispatching `action: missing`.
 
-**The pipeline only ever adds to the registry.** It publishes versions and sets tags; it never deletes either. The publish credential is append-only by consequence, so a leaked token means an unwanted version — corrected by publishing over it — rather than a removal that breaks resolution for every consumer and leaves nothing behind to inspect.
+**The pipeline only ever adds to the registry.** It publishes versions and sets tags; it never deletes either, so a leaked token means an unwanted version — corrected by publishing over it — rather than a removal that breaks resolution for every consumer and leaves nothing to inspect.
 
-Retiring a dist-tag, unpublishing a version, or any other destructive registry operation is done by hand, deliberately, by someone with their own credentials. These are one-time acts and do not justify a standing capability. "The pipeline is the only thing holding registry credentials" is an argument for where the credentials live, never for what the pipeline should be allowed to do with them.
+Retiring a dist-tag, unpublishing a version, or any other destructive registry operation is done by hand by someone with their own credentials. These are one-time acts and do not justify a standing capability. "The pipeline is the only thing holding registry credentials" is an argument for where the credentials live, never for what it may do with them.
 
-**Publish jobs serialise.** A publish takes minutes, and a second merge inside that window advances `main` under the first job's checkout, aborting it with `EBEHIND` before anything ships — merging two pull requests back to back is enough. They share a concurrency group and never cancel in progress: a half-finished publish can leave a version tagged in git but absent from the registry, which then needs manual recovery.
+**Publish jobs serialise.** A publish takes minutes, and a second merge inside that window advances `main` under the first job's checkout, aborting it with `EBEHIND` — merging two pull requests back to back is enough. They share a concurrency group and never cancel in progress, because a half-finished publish can leave a version tagged in git but absent from the registry.
 
 ### What produces a release
 
 Two things decide it, in this order.
 
-**Which packages changed**, by diffing files against each package's last release tag. A change outside `packages/` publishes nothing — the run succeeds having found no changed packages, which is the correct outcome and not a failure to investigate.
+**Which packages changed**, by diffing files against each package's last release tag. A change outside `packages/` publishes nothing — the run succeeds having found no changed packages, which is correct and not a failure to investigate.
 
 **The commit type**, which sizes the bump: `feat:` is a minor and `fix:` a patch. Every other type still produces a **patch** when the file it touched lives inside a package, because lerna falls back to patch when the conventional rules recommend nothing. A `chore:` or `ci:` commit under `packages/` releases.
 
-A breaking change while a package is `0.x` ships as a **minor** bump, which semver already permits — and lerna applies that itself: while the major version is `0`, a recommended major is downgraded to a minor. `feat:` and `feat!:` therefore land on the same version, and the `!` marker and a `BREAKING CHANGE:` footer are both safe to use. Say it plainly and put the migration in the commit body and the PR.
-
-This stops holding the moment a package reaches `1.0.0`, where a major is taken at face value.
+A breaking change while a package is `0.x` ships as a **minor**, and lerna applies that itself: while the major version is `0`, a recommended major is downgraded. `feat:` and `feat!:` land on the same version, so the `!` marker and a `BREAKING CHANGE:` footer are both safe. Say it plainly and put the migration in the commit body and the PR. This stops holding at `1.0.0`.
 
 ## Deprecating
 
-Semver's own recipe is to document the change, ship a minor with the deprecation in place, let at least one minor cycle pass, and remove in a major. It is written for `1.0.0` and above; of `0.x` the specification says only that *anything MAY change at any time* and the public API *SHOULD NOT be considered stable*. There is no convention for deprecating below `1.0.0` because the standard declines to give one, and long-lived `0.x` projects take it at its word — `esbuild` and `drizzle-orm` have published hundreds of releases each without ever deprecating anything, breaking in minors and documenting it.
+Full reasoning in [ADR-0002](./docs/adrs/0002-deprecating-below-1-0-0.md), including why the standard gives no guidance below `1.0.0`.
 
-What follows is that recipe with the roles shifted one place, because that is where `0.x` puts them: the minor does the major's job. Which is also what a caret range already assumes, so the shift costs nothing and is what a consumer's own tooling expects.
+1. Mark with `@deprecated` in JSDoc, naming the replacement and the version, in a release where **the old path still works**.
+2. Let at least one minor cycle pass.
+3. Remove in a later **minor** — never in a patch.
 
-Waiting for an actual major is not an option to weigh — these packages are `0.x` and lerna downgrades a recommended major to a minor, so **no major boundary is ever cut**.
+Deprecation and removal are always two separate releases. A consumer crossing the boundary must find the warning in a version that still works.
 
-**Consumers cannot be enumerated.** These are public packages on npm, pulled between five hundred and a thousand times a week each. The applications in this organisation are a floor, never the whole set, and "no consumer we know of uses it" is not a statement about who is affected. Asking them is worth the minute it costs, but it is a courtesy, not the gate.
+**Removal ships in a minor because that is the boundary a caret will not cross.** While a package is `0.x`, `^0.3.2` means `>=0.3.2 <0.4.0`, so a removal reaches nobody automatically and every consumer opts in deliberately. A patch is the one bump a caret does deliver unasked. This protection moves to the major at `1.0.0`.
 
-**Removal ships in a minor, and that is what makes it safe.** A caret range admits changes that do not touch the left-most non-zero component. While a package is `0.x` the major is zero, so that component is the minor: `^0.3.2` means `>=0.3.2 <0.4.0`, admitting `0.3.9` and refusing `0.4.0`.
+Consumers cannot be enumerated — these are public packages. Asking the ones in this organisation is worth the minute it costs, but it is a courtesy, not the gate.
 
-So a removal shipped as a minor reaches nobody automatically. Every consumer crosses that boundary deliberately, having chosen to move, and that covers the ones we have never heard of exactly as well as the ones we have.
+**Deprecate only what still works.** When the old path cannot keep working, leaving it as a silent no-op is worse than removing it: the caller keeps invoking something that does nothing and nothing says so. Remove it, ship it as breaking, and say what went and why.
 
-Never remove in a patch. A patch is the one bump a caret range delivers without anyone deciding to take it.
-
-**At `1.0.0` the boundary moves rather than disappears.** With a non-zero major the left-most non-zero component is the major, so `^1.3.2` means `>=1.3.2 <2.0.0` and a minor is delivered automatically. The barrier still exists; it is the major. Removal belongs there from that point, and this section needs rewriting before the first package arrives.
-
-Deprecation and removal are always **two separate releases**. Never the same one — a consumer crossing the boundary must be able to find the warning in a version that still works.
-
-### Deprecating an API
-
-Mark it with `@deprecated`, naming the replacement and the version:
-
-```ts
-/**
- * @deprecated since 0.4.0 — use `toPagination` instead, which derives the
- * same fields and owns the empty-result defaults.
- */
-```
-
-The editor surfaces this before anyone installs anything, which is the earliest a consumer can find out. It costs nothing at runtime and needs no release ceremony of its own.
-
-**Deprecate only what still works.** A deprecation is a promise that the old path keeps functioning while the caller migrates. When the old path cannot keep working — the behaviour it depended on is the thing being fixed — leaving it in place as a silent no-op is worse than removing it, because the caller keeps invoking something that does nothing and nothing says so. Remove it, ship it as breaking, and say plainly what was removed and why in the commit body and the PR.
-
-### Deprecating a published version
-
-`npm deprecate @feedma/<pkg>@<range> "<reason>"` puts a warning on install. This is for **versions**, not APIs: a release that is broken, was published in error, or should not be picked up again. It does not remove anything, so it does not break resolution, and `npm deprecate @feedma/<pkg>@<range> ""` clears it.
-
-Prefer it over unpublishing. A deprecated version stays installable for anyone already pinned to it while warning everyone else.
-
-### Deprecating a package
-
-Deprecate every published version, and publish one final release whose README says what replaces it. The package stays installable — consumers pinned to it are not broken — and every new install warns.
+`npm deprecate` is for **versions**, not APIs — a release that is broken or published in error. Prefer it over unpublishing.
 
 ## Dependencies
 
@@ -163,15 +130,9 @@ Three guards enforce what the manifests must say. They run in the normal suite:
 
 A dependency between two packages in this repository must be a declared peer in `package.json`, not only a `tsconfig.json` project reference. A project reference satisfies the compiler here and is invisible to npm.
 
-**A sibling package is a peer, never a dependency, and its range is `*`.** The suite enforces that it is a peer, and that whatever range is declared admits the version it ships beside.
+**A sibling package is a peer, never a dependency, and its range is `*`.** A peer because a second copy breaks class identity, and class identity is load-bearing — `instanceof` on the shared exception type, and Nest injection tokens. A duplicate breaks exception handling and dependency injection **silently**.
 
-A peer rather than a dependency, because a second copy breaks class identity, and class identity is load-bearing: `instanceof` on the shared exception type, and Nest injection tokens. A duplicate breaks exception handling and dependency injection **silently**.
-
-`*` rather than a bounded range for a narrower reason than it first appears. Bounded ranges are fine for consumers — `^0.0.12-0` installs clean against a published prerelease; only a range with no prerelease comparator, like `^0.0.12`, fails. The problem is upstream of that: **lerna does not rewrite sibling peer ranges when it bumps**, so any bounded range goes stale on the next sibling release and the version step aborts. Reproduced directly: bumping `nest-common` to `0.0.14-beta.0` left the peer at `^0.0.13-0` and the release failed.
-
-That is a property of the release tooling, not of the package contract, so the rule is written as "the range must admit what ships beside it" rather than "the range must be `*`". Today only `*` survives a bump unattended. If sibling peer ranges ever get rewritten — by a `version` lifecycle hook, or by different tooling — a bounded range becomes viable and the guard already allows it.
-
-The cost of `*` is that it carries no version signal: nothing warns at install time when incompatible versions are paired, so a mismatch surfaces at load instead. Acceptable while these packages are published in lockstep from one repository.
+`*` because lerna does not rewrite sibling peer ranges when it bumps, so any bounded range goes stale on the next sibling release and the version step aborts. The guard is written as "the range must admit what ships beside it", so a bounded range becomes viable if that ever changes. Reasoning and the reproduction in [ADR-0003](./docs/adrs/0003-sibling-peer-ranges.md).
 
 ## Commits
 

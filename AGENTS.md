@@ -50,15 +50,41 @@ Publishing is driven by `.github/workflows/cd.yml`. Versions are never edited by
 
 **The channel is a flag, not a branch.**
 
-| How | Channel | dist-tag |
+| Channel | dist-tag | Version | How |
+| --- | --- | --- | --- |
+| iteration | `canary` | `0.4.0-canary.0.sha-d90907b` | `workflow_dispatch`, `action: prerelease`, `channel: canary` |
+| candidate | `next` | `0.4.0-next.0` | `workflow_dispatch`, `action: prerelease`, `channel: next` |
+| stable | `latest` | `0.4.0` | PR merged into `main` |
+| recovery | unchanged | unchanged | `workflow_dispatch`, `action: missing` |
+
+All three carry the **same base version**. A consumer validating `0.4.0-next.0` is validating the exact artefact that graduates to `0.4.0` — the prerelease is computed with `--conventional-prerelease` and the stable with `--conventional-graduate`, which is what makes them agree.
+
+Prereleases leave **no commit and no tag**. The release history records only what reached `latest`.
+
+### Nothing reaches `latest` unvalidated
+
+**Every change that produces a release is published as a prerelease first and validated by a consumer before it graduates.** No exception by size: a patch breaks a consumer exactly as effectively as a minor, and a change nobody has run is unvalidated regardless of how small its diff looks.
+
+This is deliberately stricter than large frameworks, which ship patches and minors straight to `latest` and reserve prereleases for majors. That works on their download volume: a broken patch is found within hours because thousands of installs exercise it. Here the audience that would notice is a handful of applications, mostly in this organisation — so the fault would surface late, and asking someone to install a `next` costs one message. When detection is weak and validation is cheap, validate.
+
+The flow is `canary` while the work moves, `next` when it is ready to be judged, `latest` once someone says it works.
+
+**A `next` can only be cut once per stable baseline.** Nothing is tagged, so lerna recomputes the same version from the last release tag and a second publish collides with the registry. Iterate on `canary`, which carries the commit sha and is therefore unique per commit.
+
+### Graduating
+
+| Change | Gate | Time fallback |
 | --- | --- | --- |
-| PR merged into `main` | stable | `latest` |
-| `workflow_dispatch` on any branch, `action: prerelease` | prerelease | whatever `channel` you pass — `next`, `beta`, `rc`, `test` |
-| `workflow_dispatch`, `action: missing` | recovery | unchanged |
+| breaking — `feat:` with a migration | explicit confirmation | none |
+| feature — minor | explicit confirmation | 72 hours |
+| fix — patch | explicit confirmation | 24 hours |
+| hotfix — repairs something already broken in `latest` | confirmation from the affected consumer | none |
 
-Prereleases leave **no commit and no tag**. They are throwaway artefacts for someone to install and try; the release history should record only what reached `latest`.
+The fallback exists so work is not stranded when nobody answers, not as a way around validation. Graduating on the clock is a decision that nobody ran it — take it knowingly.
 
-Not every change needs one. Route by risk: a published-contract change, a removed or renamed API, or anything a consumer should exercise in their own application earns a prerelease. CI changes, documentation, a widened peer range and a fix with a test covering it go straight to `main`.
+A hotfix has no fallback for the reason it might seem to deserve one: it is the change made fastest, under the most pressure, and therefore the most likely to break something else. The consumer suffering the fault is also the one who can confirm the repair in short time, so the confirmation arrives without a clock.
+
+Changes that touch nothing under `packages/` publish nothing, so they have neither prerelease nor release. Documentation, workflow and repository configuration are outside this by construction, not by exemption.
 
 Version and publish are separate steps for the stable path. Publishing uses `lerna publish from-package`, which uploads only what the registry is missing, so a failed publish is recovered by re-running the job or dispatching `action: missing`.
 
@@ -79,6 +105,39 @@ Two things decide it, in this order.
 A breaking change while a package is `0.x` ships as a **minor** bump, which semver already permits — and lerna applies that itself: while the major version is `0`, a recommended major is downgraded to a minor. `feat:` and `feat!:` therefore land on the same version, and the `!` marker and a `BREAKING CHANGE:` footer are both safe to use. Say it plainly and put the migration in the commit body and the PR.
 
 This stops holding the moment a package reaches `1.0.0`, where a major is taken at face value.
+
+## Deprecating
+
+The usual policy — deprecate in one major, remove in the next — has nothing to attach to here. These packages are `0.x` and lerna downgrades a recommended major to a minor, so **no major boundary is ever cut**. Waiting for one means waiting forever. The anchor is the consumers instead: few enough to enumerate, and reachable.
+
+**Removal is allowed once no known consumer still uses it.** Check, do not assume. That is a stronger guarantee than any interval — an interval only measures how long nobody was asked.
+
+Deprecation and removal are always **two separate releases**. Never the same one.
+
+### Deprecating an API
+
+Mark it with `@deprecated`, naming the replacement and the version:
+
+```ts
+/**
+ * @deprecated since 0.4.0 — use `toPagination` instead, which derives the
+ * same fields and owns the empty-result defaults.
+ */
+```
+
+The editor surfaces this before anyone installs anything, which is the earliest a consumer can find out. It costs nothing at runtime and needs no release ceremony of its own.
+
+**Deprecate only what still works.** A deprecation is a promise that the old path keeps functioning while the caller migrates. When the old path cannot keep working — the behaviour it depended on is the thing being fixed — leaving it in place as a silent no-op is worse than removing it, because the caller keeps invoking something that does nothing and nothing says so. Remove it, ship it as breaking, and say plainly what was removed and why in the commit body and the PR.
+
+### Deprecating a published version
+
+`npm deprecate @feedma/<pkg>@<range> "<reason>"` puts a warning on install. This is for **versions**, not APIs: a release that is broken, was published in error, or should not be picked up again. It does not remove anything, so it does not break resolution, and `npm deprecate @feedma/<pkg>@<range> ""` clears it.
+
+Prefer it over unpublishing. A deprecated version stays installable for anyone already pinned to it while warning everyone else.
+
+### Deprecating a package
+
+Deprecate every published version, and publish one final release whose README says what replaces it. The package stays installable — consumers pinned to it are not broken — and every new install warns.
 
 ## Dependencies
 

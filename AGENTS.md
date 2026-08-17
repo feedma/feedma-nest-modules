@@ -67,6 +67,24 @@ The flow is `canary` while the work moves, `next` when it is ready to be judged,
 
 **A `next` can only be cut once per stable baseline.** Nothing is tagged, so lerna recomputes the same version and the registry rejects the second. Iterate on `canary`, which carries the commit sha and is unique per commit.
 
+### Publishing one
+
+There are no local publish commands: the registry credential lives only in the workflow. Publish from **Actions -> Publish packages -> Run workflow**, choosing your branch and the channel, or from the command line:
+
+```bash
+# while iterating, as often as needed
+gh workflow run cd.yml --ref <your-branch> -f action=prerelease -f channel=canary
+
+# when it is ready for someone to validate
+gh workflow run cd.yml --ref <your-branch> -f action=prerelease -f channel=next
+```
+
+**`latest` is not dispatched.** There is no option for it — it is produced by merging the pull request into `main`, and that merge is the whole graduation ceremony.
+
+If your change touches nothing under `packages/` the run succeeds and publishes nothing, reporting no changed packages. That is correct, not a failure.
+
+`action: missing` covers one case: a publish interrupted partway, leaving a version committed and tagged but absent from the registry. It uploads what is missing without versioning anything.
+
 ### Graduating
 
 | Change | Gate | Time fallback |

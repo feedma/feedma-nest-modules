@@ -112,11 +112,13 @@ The usual policy — deprecate in one major, remove in the next — has nothing 
 
 **Consumers cannot be enumerated.** These are public packages on npm, pulled between five hundred and a thousand times a week each. The applications in this organisation are a floor, never the whole set, and "no consumer we know of uses it" is not a statement about who is affected. Asking them is worth the minute it costs, but it is a courtesy, not the gate.
 
-**Removal ships in a minor, and that is what makes it safe.** While a package is `0.x`, a caret range pins the minor — `^0.3.2` admits `0.3.9` and refuses `0.4.0` — so a removal reaches nobody automatically. Every consumer crosses that boundary deliberately, having chosen to move, and that protection covers the ones we have never heard of exactly as well as the ones we have.
+**Removal ships in a minor, and that is what makes it safe.** A caret range admits changes that do not touch the left-most non-zero component. While a package is `0.x` the major is zero, so that component is the minor: `^0.3.2` means `>=0.3.2 <0.4.0`, admitting `0.3.9` and refusing `0.4.0`.
+
+So a removal shipped as a minor reaches nobody automatically. Every consumer crosses that boundary deliberately, having chosen to move, and that covers the ones we have never heard of exactly as well as the ones we have.
 
 Never remove in a patch. A patch is the one bump a caret range delivers without anyone deciding to take it.
 
-**This protection ends at `1.0.0`**, where `^1.3.2` does admit `1.4.0` and a minor is delivered automatically. From that point removal belongs in a major, and this section needs rewriting before the first package gets there.
+**At `1.0.0` the boundary moves rather than disappears.** With a non-zero major the left-most non-zero component is the major, so `^1.3.2` means `>=1.3.2 <2.0.0` and a minor is delivered automatically. The barrier still exists; it is the major. Removal belongs there from that point, and this section needs rewriting before the first package arrives.
 
 Deprecation and removal are always **two separate releases**. Never the same one — a consumer crossing the boundary must be able to find the warning in a version that still works.
 

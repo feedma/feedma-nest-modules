@@ -29,7 +29,17 @@ on:
         default: next
 
 jobs:
+  # Every publish job needs this one, so gating it here stops the whole
+  # workflow rather than each job separately.
+  #
+  # A pull request that is closed without merging fires the same event as one
+  # that ships, and there is no way to tell them apart from the `on:` block —
+  # `types: [closed]` covers both. Without this condition, abandoning a pull
+  # request spends a full matrix run to reach a publish step that was always
+  # going to skip, and a stale branch can fail that run for reasons nobody
+  # intends to fix.
   test:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     strategy:
       # Both maintained LTS lines. The matrix was previously declared but never

@@ -64,7 +64,17 @@ Version and publish are separate steps for the stable path. Publishing uses `ler
 
 **Publish jobs serialise.** A publish takes minutes, and a second merge inside that window advances `main` under the first job's checkout, aborting it with `EBEHIND` before anything ships — merging two pull requests back to back is enough. They share a concurrency group and never cancel in progress: a half-finished publish can leave a version tagged in git but absent from the registry, which then needs manual recovery.
 
-A breaking change while the packages are `0.x` ships as a **minor** bump, which semver already permits. Use `feat:` without a `BREAKING CHANGE:` footer and without the `!` marker — either one recommends a major and would take the packages to `1.0.0` — and put the migration in the commit body and the PR.
+### What produces a release
+
+Two things decide it, in this order.
+
+**Which packages changed**, by diffing files against each package's last release tag. A change outside `packages/` publishes nothing — the run succeeds having found no changed packages, which is the correct outcome and not a failure to investigate.
+
+**The commit type**, which sizes the bump: `feat:` is a minor and `fix:` a patch. Every other type still produces a **patch** when the file it touched lives inside a package, because lerna falls back to patch when the conventional rules recommend nothing. A `chore:` or `ci:` commit under `packages/` releases.
+
+A breaking change while a package is `0.x` ships as a **minor** bump, which semver already permits — and lerna applies that itself: while the major version is `0`, a recommended major is downgraded to a minor. `feat:` and `feat!:` therefore land on the same version, and the `!` marker and a `BREAKING CHANGE:` footer are both safe to use. Say it plainly and put the migration in the commit body and the PR.
+
+This stops holding the moment a package reaches `1.0.0`, where a major is taken at face value.
 
 ## Dependencies
 

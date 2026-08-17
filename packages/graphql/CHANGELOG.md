@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.2](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-graphql%400.2.1...%40feedma%2Fnest-graphql%400.2.2) (2026-08-17)
+
+### Bug Fixes
+
+- **deps:** align nest packages and clear their advisories ([e3ffc90](https://github.com/feedma/feedma-nest-modules/commit/e3ffc90d36f2c67c36e2a117884151bd63d283af))
+
 ## [0.2.1](https://github.com/feedma/feedma-nest-modules/compare/%40feedma%2Fnest-graphql%400.2.0...%40feedma%2Fnest-graphql%400.2.1) (2026-08-17)
 
 **Note:** Version bump only for package @feedma/nest-graphql

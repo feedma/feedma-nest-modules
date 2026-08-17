@@ -18,10 +18,9 @@ on:
         options:
           - prerelease
           - missing
-          - remove-tag
         default: prerelease
       channel:
-        description: 'npm dist-tag to publish under, or to remove with remove-tag'
+        description: 'npm dist-tag for the prerelease (next, beta, rc, test)'
         type: string
         default: next
       preid:
@@ -40,7 +39,7 @@ jobs:
   # going to skip, and a stale branch can fail that run for reasons nobody
   # intends to fix.
   test:
-    if: (github.event_name == 'workflow_dispatch' && inputs.action != 'remove-tag') || github.event.pull_request.merged == true
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     strategy:
       # Both maintained LTS lines. The matrix was previously declared but never
@@ -185,44 +184,5 @@ jobs:
           npm run build
       - name: Publish missing versions
         run: npm run publish:missing
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  # Removes a dist-tag from every package. A prerelease channel outlives the
-  # artefact it pointed at: the version stays in the registry forever, but the
-  # tag keeps advertising it as the current one for that channel, and installing
-  # by tag then silently returns something far behind `latest`.
-  #
-  # Publishing is the only path with registry credentials, so retiring a channel
-  # belongs here rather than in someone's shell.
-  remove_tag:
-    if: github.event_name == 'workflow_dispatch' && inputs.action == 'remove-tag'
-    concurrency:
-      # Shares the publish group so a removal cannot land between a publish
-      # setting a tag and the version it points at, and delete what was just set.
-      group: publish-${{ github.repository }}
-      cancel-in-progress: false
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          registry-url: 'https://registry.npmjs.org'
-      # `latest` is what a plain `npm install` resolves, so removing it would
-      # leave the package uninstallable without an explicit version.
-      - name: Remove the dist-tag from every package
-        run: |
-          if [ "${{ inputs.channel }}" = "latest" ]; then
-            echo "::error::latest cannot be removed"
-            exit 1
-          fi
-          for manifest in packages/*/package.json; do
-            name=$(node -p "require('./$manifest').name")
-            npm dist-tag rm "$name" "${{ inputs.channel }}" \
-              || echo "$name has no ${{ inputs.channel }} tag, nothing to remove"
-          done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

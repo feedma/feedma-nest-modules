@@ -108,7 +108,11 @@ This stops holding the moment a package reaches `1.0.0`, where a major is taken 
 
 ## Deprecating
 
-The usual policy — deprecate in one major, remove in the next — has nothing to attach to here. These packages are `0.x` and lerna downgrades a recommended major to a minor, so **no major boundary is ever cut**. Waiting for one means waiting forever.
+Semver's own recipe is to document the change, ship a minor with the deprecation in place, let at least one minor cycle pass, and remove in a major. It is written for `1.0.0` and above; of `0.x` the specification says only that *anything MAY change at any time* and the public API *SHOULD NOT be considered stable*. There is no convention for deprecating below `1.0.0` because the standard declines to give one, and long-lived `0.x` projects take it at its word — `esbuild` and `drizzle-orm` have published hundreds of releases each without ever deprecating anything, breaking in minors and documenting it.
+
+What follows is that recipe with the roles shifted one place, because that is where `0.x` puts them: the minor does the major's job. Which is also what a caret range already assumes, so the shift costs nothing and is what a consumer's own tooling expects.
+
+Waiting for an actual major is not an option to weigh — these packages are `0.x` and lerna downgrades a recommended major to a minor, so **no major boundary is ever cut**.
 
 **Consumers cannot be enumerated.** These are public packages on npm, pulled between five hundred and a thousand times a week each. The applications in this organisation are a floor, never the whole set, and "no consumer we know of uses it" is not a statement about who is affected. Asking them is worth the minute it costs, but it is a courtesy, not the gate.
 

@@ -33,6 +33,29 @@ updates:
       remaining:
         patterns:
           - '*'
+    # Two majors are held back deliberately. A grouped pull request installs as
+    # one tree, so a single dependency that cannot resolve fails the whole
+    # batch before anything compiles — holding these two is what lets the ten
+    # beside them through.
+    #
+    # Each hold names the condition that ends it. Review one by deleting its
+    # entry and letting the group rebuild.
+    ignore:
+      # `typescript` 7 has no lint toolchain yet: the newest
+      # `@typescript-eslint` still declares `typescript >=4.8.4 <6.1.0` as a
+      # peer, so npm refuses the tree outright. Drop this once
+      # `@typescript-eslint` publishes a release whose peer range admits 7.
+      - dependency-name: 'typescript'
+        update-types:
+          - 'version-update:semver-major'
+      # `@types/node` must describe a runtime this project actually tests. The
+      # CI matrix runs the maintained LTS lines, and the next major does not
+      # reach LTS until late October 2026 — typing against it first reports
+      # errors for APIs no supported runtime here provides. Drop this once the
+      # matrix gains that line.
+      - dependency-name: '@types/node'
+        update-types:
+          - 'version-update:semver-major'
     commit-message:
       # `chore` keeps these out of the changelog's feature and fix sections.
       # They still trigger a patch release, which is correct: the manifests

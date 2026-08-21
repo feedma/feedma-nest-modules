@@ -1,6 +1,10 @@
 # compiled output
 dist/
 lib/
+
+# TypeScript incremental build cache. It sits beside each package rather
+# than inside `lib/`, so publishing `lib` does not ship it.
+*.tsbuildinfo
 node_modules/
 
 # agent tooling scratch: decisions worth keeping go in docs/{rfcs,specs,adrs}

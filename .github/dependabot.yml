@@ -33,10 +33,14 @@ updates:
       remaining:
         patterns:
           - '*'
-    # Two majors are held back deliberately. A grouped pull request installs as
-    # one tree, so a single dependency that cannot resolve fails the whole
-    # batch before anything compiles — holding these two is what lets the ten
-    # beside them through.
+    # These majors are held back deliberately. A grouped pull request installs
+    # as one tree, so a single dependency that cannot resolve fails the whole
+    # batch before anything compiles — holding one is what lets the dozen
+    # beside it through.
+    #
+    # A hold is more durable than closing the pull request it produces. Closing
+    # one suppresses that exact version, so the next patch release reopens it
+    # and the same decision has to be made again from memory.
     #
     # Each hold names the condition that ends it. Review one by deleting its
     # entry and letting the group rebuild.
@@ -54,6 +58,13 @@ updates:
       # errors for APIs no supported runtime here provides. Drop this once the
       # matrix gains that line.
       - dependency-name: '@types/node'
+        update-types:
+          - 'version-update:semver-major'
+      # `typeorm` 1.x cannot be installed while a pagination helper this
+      # repository depends on still declares `typeorm: ^0.3.0` as its peer.
+      # The constraint is upstream and not ours to fix; holding it keeps the
+      # rest of its group moving. Drop this once that peer range admits 1.x.
+      - dependency-name: 'typeorm'
         update-types:
           - 'version-update:semver-major'
     commit-message:

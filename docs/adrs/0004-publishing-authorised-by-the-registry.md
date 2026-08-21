@@ -43,7 +43,7 @@ Any control that works has to sit outside the repository.
 
 Publishing was deliberately kept behind `workflow_dispatch` rather than a pull request label, because running a workflow needs write access while managing labels needs only triage, and the lower bar was not worth the saved command.
 
-That reasoning was about **who may trigger a publish**. It says nothing about **what may be published**, which is the gap here. A trigger check answers "is this person allowed to release"; it never answers "is this artefact the reviewed one". Deciding the second question turns out to unsettle the first, which the Consequences record.
+That reasoning was about **who may trigger a publish**. It says nothing about **what may be published**, which is the gap here. A trigger check answers "is this person allowed to release"; it never answers "is this artefact the reviewed one". Answering the second question turns out to put the first on firmer ground than it was argued — see the Consequences.
 
 ## Decision
 
@@ -72,9 +72,13 @@ There is no longer a long-lived credential to leak, rotate, or accidentally prin
 
 This approval is **not** the consumer validation of [ADR-0001](./0001-release-channels-and-validation.md), and does not substitute for it. That gate asks whether the code works for somebody who installed it; this one asks whether the artefact is the intended one. The time-based fallbacks apply to the first and never to the second: nothing publishes on a clock.
 
-**The trigger stops being the authorisation boundary.** Publishing was kept behind `workflow_dispatch` rather than a pull request label on an access argument: running a workflow needs write, managing labels needs only triage, and that difference was worth one command. That argument is spent. Someone holding only triage who could start a run still cannot make anything installable — the maintainer's approval decides that, whatever triggered it.
+**The trigger stops being the gate, and becomes the narrowest door.** Publishing was kept behind `workflow_dispatch` rather than a pull request label on an access argument: a workflow needs write, a label needs only triage. Moving the gate to the registry looks at first like it retires that argument, since nothing a triage-level actor starts can become installable. It does not. The replacement reason is stronger than the original.
 
-What the dispatch still carries is choice rather than authority: which channel, and which ref. Whether that choice could move to a label is now a question of cost — a cheaper trigger means more staged versions queued for review and more CI spent on runs nobody asked for — and no longer one of access. This ADR does not decide it, and it should not be decided by inertia either: the rule as written rests on a premise this decision removes.
+A trigger reachable below write grants something write already covers: causing this repository's CI to build arbitrary code, mint an identity token, and hold a `GITHUB_TOKEN`. The registry gate bounds what may be **published**; it bounds nothing about what may be **executed**. A cheaper trigger can therefore only widen the surface, never narrow it — which is a firmer argument than weighing one access level against another, and it does not depend on how the registry is configured.
+
+The corollary is that where a workflow definition is read from — the default branch, or the branch being published — buys nothing at this bar. Anyone holding write can add a second workflow beside the first and trigger that instead, so a guard inside one file constrains nobody who could reach it. Definition integrity would start to matter only for a trigger available to people who cannot push, and this is the rule that declines to create one.
+
+What the dispatch still carries is choice rather than authority: which channel, and which ref. That is a smaller role than it held before this decision, and the right one.
 
 The workflow filename becomes part of the trust configuration. Renaming `cd.yml` breaks publishing, and it breaks at the registry rather than in CI, so the failure will not look like the cause. Rename it only alongside the four package configurations.
 

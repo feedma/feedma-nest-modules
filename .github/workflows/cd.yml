@@ -72,6 +72,14 @@ jobs:
     permissions:
       contents: write
       packages: write
+      # Mints the identity token lerna exchanges with the registry.
+      id-token: write
+    # The registry authorises this job by OIDC: no npm token is stored anywhere.
+    # npm accepts the publish only when the identity token names this repository,
+    # this workflow file, and this environment — so renaming the file, or dropping
+    # the environment to skip the approval, is refused by the registry rather than
+    # merely left without a credential.
+    environment: release
     steps:
       - uses: actions/checkout@v7
         with:
@@ -102,8 +110,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish
         run: npm run publish:stable
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   # On-demand prerelease from whatever branch is dispatched. Leaves no commit
   # and no tag: a prerelease is a throwaway artefact for someone to install and
@@ -124,6 +130,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      # Mints the identity token lerna exchanges with the registry.
+      id-token: write
+    # The registry authorises this job by OIDC: no npm token is stored anywhere.
+    # npm accepts the publish only when the identity token names this repository,
+    # this workflow file, and this environment — so renaming the file, or dropping
+    # the environment to skip the approval, is refused by the registry rather than
+    # merely left without a credential.
+    environment: release
     steps:
       - uses: actions/checkout@v7
         with:
@@ -152,8 +166,6 @@ jobs:
       # iteration build is for running the code, not for judging the release.
       - name: Publish prerelease
         run: npm run publish:${{ inputs.channel }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   # Recovery. Publishes any package whose version is already committed and
   # tagged but never reached the registry, without versioning anything.
@@ -173,6 +185,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      # Mints the identity token lerna exchanges with the registry.
+      id-token: write
+    # The registry authorises this job by OIDC: no npm token is stored anywhere.
+    # npm accepts the publish only when the identity token names this repository,
+    # this workflow file, and this environment — so renaming the file, or dropping
+    # the environment to skip the approval, is refused by the registry rather than
+    # merely left without a credential.
+    environment: release
     steps:
       - uses: actions/checkout@v7
         with:
@@ -188,5 +208,3 @@ jobs:
           npm run build
       - name: Publish missing versions
         run: npm run publish:missing
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

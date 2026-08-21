@@ -86,9 +86,13 @@ Prereleases leave **no commit and no tag**. The release history records only wha
 
 Version and publish are separate steps for the stable path. Publishing uses `lerna publish from-package`, which uploads only what the registry is missing, so a failed publish is recovered by re-running the job or dispatching `action: missing`.
 
-**The pipeline only ever adds to the registry.** It publishes versions and sets tags; it never deletes either, so a leaked token means an unwanted version — corrected by publishing over it — rather than a removal that breaks resolution for every consumer and leaves nothing to inspect.
+**No npm credential is stored anywhere.** The registry authorises a publish by OIDC, and accepts it only when the identity token names this repository, the workflow file `cd.yml`, and the `release` environment. Renaming that workflow breaks publishing, and it breaks at the registry rather than in CI, so the failure will not look like the cause. Reasoning in [ADR-0004](./docs/adrs/0004-publishing-authorised-by-the-registry.md).
 
-Retiring a dist-tag, unpublishing a version, or any other destructive registry operation is done by hand by someone with their own credentials. These are one-time acts and do not justify a standing capability. "The pipeline is the only thing holding registry credentials" is an argument for where the credentials live, never for what it may do with them.
+**Every publish waits for a named approver**, canary included. That is what the `release` environment is for: declaring it is what mints an accepted identity token, and declaring it is what pauses the run. A branch that edits `cd.yml` to drop the environment does not skip the gate — the registry refuses the token. The permission is per package rather than per dist-tag, so there is no configuration that gates `latest` while leaving iteration free.
+
+**The pipeline only ever adds to the registry.** It publishes versions and sets tags; it never deletes either, so a compromised run means an unwanted version — corrected by publishing over it — rather than a removal that breaks resolution for every consumer and leaves nothing to inspect.
+
+Retiring a dist-tag, unpublishing a version, or any other destructive registry operation is done by hand by someone with their own credentials. These are one-time acts and do not justify a standing capability.
 
 **Publish jobs serialise.** A publish takes minutes, and a second merge inside that window advances `main` under the first job's checkout, aborting it with `EBEHIND` — merging two pull requests back to back is enough. They share a concurrency group and never cancel in progress, because a half-finished publish can leave a version tagged in git but absent from the registry.
 

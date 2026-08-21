@@ -18,8 +18,13 @@ import { BaseRepository } from './base.repository';
  * entities or raw rows, and only a database that actually performs the join
  * can tell the two apart. A repository double would report success either way.
  *
- * sql.js is a WebAssembly build of SQLite, so it needs no native compilation
- * and behaves the same on every Node line the matrix runs.
+ * The engine is sql.js, a WebAssembly build of SQLite: it needs no native
+ * compilation, so it behaves the same on every Node line the matrix runs where
+ * a native driver would need a prebuild per ABI.
+ *
+ * Nothing here imports it. TypeORM resolves `type: 'sqljs'` to its own driver
+ * and requires the package itself, which is why `sql.js` appears in this
+ * package's dev dependencies with no import to point at.
  */
 
 // `Author` is declared first because `emitDecoratorMetadata` resolves a

@@ -1,20 +1,8 @@
-import { IPaginationMeta } from 'nestjs-typeorm-paginate';
 import { toPagination } from './pagination.adapter';
 
-function buildMeta(overrides: Partial<IPaginationMeta> = {}): IPaginationMeta {
-  return {
-    itemCount: 15,
-    totalItems: 47,
-    itemsPerPage: 15,
-    totalPages: 4,
-    currentPage: 2,
-    ...overrides,
-  };
-}
-
 describe('toPagination', () => {
-  it('maps the paginator meta onto the contract', () => {
-    expect(toPagination(buildMeta())).toEqual({
+  it('derives the contract from the counted result', () => {
+    expect(toPagination({ totalItems: 47, page: 2, limit: 15 })).toEqual({
       totalItems: 47,
       itemsPerPage: 15,
       totalPages: 4,
@@ -25,10 +13,9 @@ describe('toPagination', () => {
   });
 
   it('reports no navigation for an empty result set', () => {
-    const pagination = toPagination(
-      buildMeta({ itemCount: 0, totalItems: 0, totalPages: 0, currentPage: 1 }),
-    );
+    const pagination = toPagination({ totalItems: 0, page: 1, limit: 15 });
 
+    expect(pagination.totalPages).toBe(0);
     expect(pagination.firstPage).toBeNull();
     expect(pagination.lastPage).toBeNull();
   });
@@ -36,9 +23,7 @@ describe('toPagination', () => {
   it('keeps navigation when the page is out of range but the result set is not empty', () => {
     // The rule keys off totalItems, never items.length. A caller asking for page
     // 99 of four gets no items but must still learn that page 4 exists.
-    const pagination = toPagination(buildMeta({ itemCount: 0, currentPage: 99 }));
-
-    expect(pagination).toEqual({
+    expect(toPagination({ totalItems: 47, page: 99, limit: 15 })).toEqual({
       totalItems: 47,
       itemsPerPage: 15,
       totalPages: 4,
@@ -46,5 +31,23 @@ describe('toPagination', () => {
       firstPage: 1,
       lastPage: 4,
     });
+  });
+
+  it('keeps navigation for a page below one', () => {
+    // Out of range in the other direction is the same case: the page cannot be
+    // served, and the result set is still populated.
+    const pagination = toPagination({ totalItems: 47, page: 0, limit: 15 });
+
+    expect(pagination.page).toBe(0);
+    expect(pagination.firstPage).toBe(1);
+    expect(pagination.lastPage).toBe(4);
+  });
+
+  it('counts a partial last page as a page', () => {
+    expect(toPagination({ totalItems: 31, page: 1, limit: 15 }).totalPages).toBe(3);
+  });
+
+  it('reports one page when the result set fits exactly', () => {
+    expect(toPagination({ totalItems: 15, page: 1, limit: 15 }).totalPages).toBe(1);
   });
 });

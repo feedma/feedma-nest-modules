@@ -43,7 +43,7 @@ Any control that works has to sit outside the repository.
 
 Publishing was deliberately kept behind `workflow_dispatch` rather than a pull request label, because running a workflow needs write access while managing labels needs only triage, and the lower bar was not worth the saved command.
 
-That reasoning was about **who may trigger a publish**, and it still holds. It says nothing about **what may be published**, which is the gap here. A trigger check answers "is this person allowed to release"; it never answers "is this artefact the reviewed one".
+That reasoning was about **who may trigger a publish**. It says nothing about **what may be published**, which is the gap here. A trigger check answers "is this person allowed to release"; it never answers "is this artefact the reviewed one". Deciding the second question turns out to unsettle the first, which the Consequences record.
 
 ## Decision
 
@@ -71,6 +71,10 @@ There is no longer a long-lived credential to leak, rotate, or accidentally prin
 **Every publish now requires a human with 2FA, including canary.** This is the real cost, and it lands on the channel least able to afford it: canary exists to be cut as often as iteration demands, and each one now waits for an approval. The permission is per package, not per dist-tag, so there is no configuration that gates `latest` while leaving `canary` free — allowing direct publishes to unblock canary would remove the gate everywhere. The mitigating fact is that a canary is already dispatched by hand by someone who is present and watching; approving it is a second action by the same person, not a handoff to someone else.
 
 This approval is **not** the consumer validation of [ADR-0001](./0001-release-channels-and-validation.md), and does not substitute for it. That gate asks whether the code works for somebody who installed it; this one asks whether the artefact is the intended one. The time-based fallbacks apply to the first and never to the second: nothing publishes on a clock.
+
+**The trigger stops being the authorisation boundary.** Publishing was kept behind `workflow_dispatch` rather than a pull request label on an access argument: running a workflow needs write, managing labels needs only triage, and that difference was worth one command. That argument is spent. Someone holding only triage who could start a run still cannot make anything installable — the maintainer's approval decides that, whatever triggered it.
+
+What the dispatch still carries is choice rather than authority: which channel, and which ref. Whether that choice could move to a label is now a question of cost — a cheaper trigger means more staged versions queued for review and more CI spent on runs nobody asked for — and no longer one of access. This ADR does not decide it, and it should not be decided by inertia either: the rule as written rests on a premise this decision removes.
 
 The workflow filename becomes part of the trust configuration. Renaming `cd.yml` breaks publishing, and it breaks at the registry rather than in CI, so the failure will not look like the cause. Rename it only alongside the four package configurations.
 

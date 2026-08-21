@@ -3,12 +3,7 @@
   "compilerOptions": {
     "composite": true,
     "declaration": true,
-    "outDir": "./lib",
-    // Keep the incremental build cache out of `lib`: `files: ["lib"]`
-    // publishes that directory wholesale, and TypeScript writes this file
-    // into `outDir` by default. It is a build artefact with no runtime
-    // purpose, and it dwarfs the code it accompanies.
-    "tsBuildInfoFile": "./.tsbuildinfo"
+    "outDir": "./lib"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"],

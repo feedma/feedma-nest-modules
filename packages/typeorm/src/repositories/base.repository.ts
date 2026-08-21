@@ -8,7 +8,6 @@ import {
   SelectQueryBuilder,
   FindManyOptions,
 } from 'typeorm';
-import { paginate } from 'nestjs-typeorm-paginate';
 import { IPage, IPaginationParams } from '@feedma/nest-common';
 import { toPagination } from './pagination.adapter';
 
@@ -55,16 +54,38 @@ export class BaseRepository<Entity> extends Repository<Entity> {
     customOptions?: IPaginationParams | FindOptionsWhere<Entity> | FindManyOptions<Entity>,
   ): Promise<IPage<Entity>> {
     //TODO: make defaultPaginationOptions configurable form outside
-    const result =
-      target instanceof SelectQueryBuilder
-        ? await paginate<Entity>(target, toPaginateOptions(customOptions as IPaginationParams))
-        : await paginate<Entity>(
-            this,
-            toPaginateOptions(target),
-            customOptions as FindOptionsWhere<Entity> | FindManyOptions<Entity>,
-          );
+    const queryBuilder = target instanceof SelectQueryBuilder ? target : undefined;
+    const { page, limit } = toPaginateOptions(
+      (queryBuilder ? customOptions : target) as IPaginationParams,
+    );
+    const skip = (page - 1) * limit;
 
-    return { items: result.items, pagination: toPagination(result.meta) };
+    // A page below one addresses no rows: there is no offset for it, and
+    // clamping it to the first page would answer a different question than the
+    // one asked. Count anyway, so the caller still learns the result set is
+    // populated and where its pages begin.
+    if (skip < 0) {
+      const totalItems = queryBuilder
+        ? await queryBuilder.getCount()
+        : await this.count(customOptions as FindManyOptions<Entity>);
+
+      return { items: [], pagination: toPagination({ totalItems, page, limit }) };
+    }
+
+    // `skip`/`take` rather than `offset`/`limit`. The two are equivalent only
+    // until a join multiplies rows: `limit` truncates the joined row set, so a
+    // query with `leftJoinAndSelect` returns fewer entities than asked for and
+    // the last one arrives with its relation half loaded. `skip`/`take` paginate
+    // the entities and let the join follow.
+    const [items, totalItems] = queryBuilder
+      ? await queryBuilder.skip(skip).take(limit).getManyAndCount()
+      : await this.findAndCount({
+          ...(customOptions as FindManyOptions<Entity>),
+          skip,
+          take: limit,
+        });
+
+    return { items, pagination: toPagination({ totalItems, page, limit }) };
   }
 
   async findOneByIdOrFail(id: ID): Promise<Entity | null> {
